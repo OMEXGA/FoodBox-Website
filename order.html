@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order — Fit-Grid</title>
+  <meta name="description" content="สั่งซื้อ Fit-Grid นิวทริชั่นบาร์" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+  <!-- Three.js + loaders -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    /* ================================================
+       ORDER PAGE STYLES — Amazon-style layout
+       ================================================ */
+
+    .order-page {
+      min-height: 100vh;
+      padding-top: 72px;
+      background: #0c2030;
+    }
+
+    /* ---- Breadcrumb ---- */
+    .breadcrumb-bar {
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.6rem 2rem;
+    }
+
+    .breadcrumb {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb a {
+      color: var(--teal-bright);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumb .sep {
+      opacity: 0.4;
+    }
+
+    .breadcrumb .current {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* ---- Main layout: 3-col like Amazon ---- */
+    .product-layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: 90px 1fr 300px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* ---- Thumbnail column ---- */
+    .thumb-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      position: sticky;
+      top: 88px;
+    }
+
+    .thumb-item {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      border: 2px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .thumb-item:hover {
+      border-color: rgba(45, 184, 200, 0.5);
+      transform: scale(1.04);
+    }
+
+    .thumb-item.active {
+      border-color: var(--teal-bright);
+      box-shadow: 0 0 10px rgba(45, 184, 200, 0.35);
+    }
+
+    /* ---- Main image ---- */
+    .main-img-col {
+      position: sticky;
+      top: 88px;
+    }
+
+    .main-img-wrap {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      aspect-ratio: 1 / 0.75;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .main-img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: opacity 0.25s ease, transform 0.35s ease;
+    }
+
+    /* Bars are tall/narrow — scale them down inside the wide frame */
+    .main-img-wrap img.img-is-bar {
+      transform: scale(0.58);
+    }
+
+    .main-img-wrap img.img-is-box {
+      transform: scale(0.95);
+    }
+
+    .main-img-wrap img.fade-out {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    /* ---- Three.js canvas ---- */
+    #three-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 18px;
+      display: none;
+      cursor: grab;
+    }
+
+    #three-canvas:active {
+      cursor: grabbing;
+    }
+
+    #three-canvas.visible {
+      display: block;
+    }
+
+    /* ---- View toggle pill ---- */
+    .view-toggle {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      background: rgba(10, 30, 50, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 100px;
+      padding: 3px;
+      gap: 3px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .view-toggle button {
+      padding: 0.3rem 0.9rem;
+      border-radius: 100px;
+      border: none;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--font-en);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: rgba(255, 255, 255, 0.5);
+      background: transparent;
+      letter-spacing: 0.3px;
+    }
+
+    .view-toggle button.active {
+      background: var(--teal-bright);
+      color: #0c2030;
+      box-shadow: 0 2px 10px rgba(45, 184, 200, 0.4);
+    }
+
+    /* 3D loading spinner */
+    .three-loader {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .three-loader.visible {
+      display: flex;
+    }
+
+    .three-loader-ring {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(45, 184, 200, 0.15);
+      border-top-color: var(--teal-bright);
+      border-radius: 50%;
+      animation: spin3d 0.8s linear infinite;
+    }
+
+    .three-loader-text {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    @keyframes spin3d {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Rotate hint */
+    .rotate-hint {
+      position: absolute;
+      bottom: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.3);
+      display: none;
+      gap: 0.35rem;
+      align-items: center;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .rotate-hint.visible {
+      display: flex;
+    }
+
+    .main-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.28rem 0.7rem;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---- Info column (middle) ---- */
+    .info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .product-name {
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+
+    .product-name-th {
+      font-family: var(--font-th);
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.25rem;
+    }
+
+    /* Rating */
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .stars {
+      color: #f5c842;
+    }
+
+    .rating-num {
+      color: var(--teal-bright);
+      font-weight: 600;
+    }
+
+    .rating-reviews {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Price */
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .price-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .price-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .price-per {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .hr {
+      height: 1px;
+      background: var(--glass-border);
+    }
+
+    /* Variant selector — Amazon style */
+    .variant-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .variant-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .variant-label strong {
+      color: var(--white);
+    }
+
+    .variant-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .variant-card {
+      position: relative;
+      border: 2px solid var(--glass-border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.5rem 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .variant-card:hover {
+      border-color: rgba(45, 184, 200, 0.45);
+      background: rgba(45, 184, 200, 0.06);
+    }
+
+    .variant-card.selected {
+      border-color: var(--teal-bright);
+      background: rgba(45, 184, 200, 0.1);
+      box-shadow: 0 0 0 1px var(--teal-bright);
+    }
+
+    /* Colour override per product type */
+    .variant-card[data-key="protein"].selected {
+      --vc: #3ec97a;
+      border-color: var(--vc);
+      box-shadow: 0 0 0 1px var(--vc);
+      background: rgba(62, 201, 122, 0.1);
+    }
+
+    .variant-card[data-key="carbohydrate"].selected {
+      --vc: #f5c842;
+      border-color: var(--vc);
+      box-shadow: 0 0 0 1px var(--vc);
+      background: rgba(245, 200, 66, 0.1);
+    }
+
+    .variant-card[data-key="vitamin"].selected {
+      --vc: #7ed957;
+      border-color: var(--vc);
+      box-shadow: 0 0 0 1px var(--vc);
+      background: rgba(126, 217, 87, 0.1);
+    }
+
+    .variant-card[data-key="mineral"].selected {
+      --vc: #2db8c8;
+      border-color: var(--vc);
+      box-shadow: 0 0 0 1px var(--vc);
+      background: rgba(45, 184, 200, 0.1);
+    }
+
+    .variant-card[data-key="fat"].selected {
+      --vc: #ff9f2f;
+      border-color: var(--vc);
+      box-shadow: 0 0 0 1px var(--vc);
+      background: rgba(255, 160, 50, 0.1);
+    }
+
+
+    .variant-card .vc-img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+    }
+
+    .variant-card .vc-name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.3;
+    }
+
+    .variant-card .vc-price {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Selected check tick */
+    .variant-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: var(--white);
+    }
+
+    /* Nutrition chips */
+    .nutrition-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .n-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 7px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .n-chip strong {
+      color: var(--white);
+    }
+
+    /* Benefits */
+    .benefits {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .benefit {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      font-size: 0.83rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+    }
+
+    .benefit .bi {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ---- Right col: Buy box (like Amazon) ---- */
+    .buy-box {
+      position: sticky;
+      top: 88px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .buy-box-price {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .buy-box-price-sub {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.1rem;
+    }
+
+    .buy-box-status {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--green-fresh);
+    }
+
+    .buy-box-status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-fresh);
+      animation: pulse-badge 1.8s ease-in-out infinite;
+    }
+
+    /* Quantity dropdown */
+    .qty-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .qty-wrap label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .qty-select-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .custom-qty-control {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      padding: 0.35rem 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .custom-qty-control button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .custom-qty-control button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .custom-qty-control input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      width: 40px;
+      text-align: center;
+      font-size: 1.05rem;
+      outline: none;
+    }
+
+    /* Hide number input spinners */
+    .custom-qty-control input::-webkit-outer-spin-button,
+    .custom-qty-control input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .custom-qty-control input[type=number] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .qty-total {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .qty-total strong {
+      color: var(--white);
+    }
+
+    /* Buy buttons */
+    .btn-add-cart {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 12px;
+      border: 1.5px solid rgba(45, 184, 200, 0.5);
+      background: rgba(45, 184, 200, 0.1);
+      color: var(--teal-bright);
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: var(--font-en);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s var(--ease);
+    }
+
+    .btn-add-cart:hover {
+      background: rgba(45, 184, 200, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-buy-now {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #f5a623, #f5c842);
+      color: #1a1a1a;
+      font-size: 0.9rem;
+      font-weight: 800;
+      font-family: var(--font-en);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 16px rgba(245, 166, 35, 0.35);
+      transition: all 0.2s var(--ease);
+    }
+
+    .btn-buy-now:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(245, 200, 66, 0.45);
+    }
+
+    /* Delivery */
+    .buy-box-deliver {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .deliver-row {
+      display: flex;
+      gap: 0.55rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.45);
+      align-items: flex-start;
+    }
+
+    .deliver-row span:first-child {
+      flex-shrink: 0;
+    }
+
+    .deliver-row strong {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Buy box hr */
+    .buy-hr {
+      height: 1px;
+      background: var(--glass-border);
+    }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(10, 35, 50, 0.96);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      z-index: 3000;
+      transition: transform 0.35s var(--ease);
+      white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 960px) {
+      .product-layout {
+        grid-template-columns: 64px 1fr;
+        grid-template-rows: auto auto;
+      }
+
+      .buy-col {
+        grid-column: 1 / -1;
+        position: static;
+      }
+
+      .buy-box {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .product-layout {
+        grid-template-columns: 1fr;
+        padding: 1rem 1rem 3rem;
+        gap: 1.2rem;
+      }
+
+      .thumb-col {
+        flex-direction: row;
+        flex-wrap: wrap;
+        position: static;
+      }
+
+      .thumb-item {
+        width: 56px;
+        height: 56px;
+      }
+
+      .main-img-col {
+        position: static;
+      }
+
+      .variant-grid {
+        gap: 0.4rem;
+      }
+
+      .variant-card {
+        min-width: 75px;
+      }
+    }
+
+    /* Image transition */
+    @keyframes infoIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .info-animate {
+      animation: infoIn 0.3s ease both;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ░░░ NAVBAR ░░░ -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html"><span class="nav-icon">🏠</span> Home</a></li>
+        <li class="nav-dropdown">
+          <a href="order.html" class="active"><span class="nav-icon">🍫</span> Products <span
+              class="chevron">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="order.html?product=protein"><span class="dropdown-icon dd-protein">💪</span><span>Protein
+                  Bar</span></a></li>
+            <li><a href="order.html?product=carbohydrate"><span class="dropdown-icon dd-carb">⚡</span><span>Carbohydrate
+                  Bar</span></a></li>
+            <li><a href="order.html?product=vitamin"><span class="dropdown-icon dd-vitamin">🌿</span><span>Vitamin
+                  Bar</span></a></li>
+            <li><a href="order.html?product=mineral"><span class="dropdown-icon dd-mineral">💧</span><span>Mineral
+                  Bar</span></a></li>
+            <li><a href="order.html?product=fat"><span class="dropdown-icon dd-fat">🥑</span><span>Healthy Fat
+                  Bar</span></a></li>
+            <li class="dropdown-divider"></li>
+            <li><a href="box-order.html" style="color:#c87dff"><span class="dropdown-icon dd-box">🎨</span><span>Custom
+                  Box Builder</span></a></li>
+            <li><a href="scan.html" style="color:#2db8c8"><span class="dropdown-icon"
+                  style="background:rgba(45,184,200,0.2)">📷</span><span>Scan QR Box</span></a></li>
+          </ul>
+        </li>
+        <li><a href="chatbot.html"><span class="nav-icon">🤖</span> AI Chat</a></li>
+        <li><a href="howto.html"><span class="nav-icon">🍳</span> How to Cook</a></li>
+        <li><a href="contact.html"><span class="nav-icon">📩</span> Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span
+            class="nav-login-text">Login</span></a>
+        <a href="#signup" class="nav-cta nav-signup-btn">✨ Sign Up</a>
+        <button class="hamburger" id="hamburger" aria-label="menu"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-inner">
+        <a href="index.html">🏠 Home</a>
+        <a href="howto.html">🍳 How to Cook</a>
+        <a href="order.html?product=protein">💪 Protein Bar</a>
+        <a href="order.html?product=carbohydrate">⚡ Carbohydrate Bar</a>
+        <a href="order.html?product=vitamin">🌿 Vitamin Bar</a>
+        <a href="order.html?product=mineral">💧 Mineral Bar</a>
+        <a href="order.html?product=fat">🥑 Healthy Fat Bar</a>
+        <a href="box-order.html" style="color:#c87dff">🎨 Custom Box Builder</a>
+        <a href="chatbot.html">🤖 AI Chat</a>
+        <a href="contact.html">📩 Contact</a>
+        <a href="#signup" class="mobile-cta nav-signup-btn">✨ Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░░ ORDER PAGE ░░░ -->
+  <main class="order-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="sep">›</span>
+        <a href="order.html">Products</a>
+        <span class="sep">›</span>
+        <span class="current" id="bc-name">Protein Bar</span>
+      </nav>
+    </div>
+
+    <!-- 3-column layout -->
+    <div class="product-layout">
+
+      <!-- Col 1: Thumbnails -->
+      <div class="thumb-col" id="thumb-col">
+        <!-- injected by JS -->
+      </div>
+
+      <!-- Col 2: Main image + Info -->
+      <div class="main-img-col">
+        <div class="main-img-wrap" id="main-img-wrap">
+          <span class="main-badge" id="main-badge"></span>
+          <img id="main-img" src="" alt="Product" />
+          <!-- Three.js renders here -->
+          <canvas id="three-canvas"></canvas>
+          <!-- Loading spinner -->
+          <div class="three-loader" id="three-loader">
+            <div class="three-loader-ring"></div>
+            <span class="three-loader-text">Loading 3D model…</span>
+          </div>
+          <!-- Rotate hint -->
+          <div class="rotate-hint" id="rotate-hint">🖱️ Drag to rotate · Scroll to zoom</div>
+          <!-- 2D / 3D toggle -->
+          <div class="view-toggle">
+            <button id="btn-view-2d" class="active" onclick="setView('2d')">📷 2D</button>
+            <button id="btn-view-3d" onclick="setView('3d')">🔳 3D</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 3: Info -->
+      <div class="info-col" id="info-col">
+
+        <!-- Name + rating -->
+        <div class="info-animate" id="info-text">
+          <div class="product-name" id="p-name"></div>
+          <div class="product-name-th" id="p-name-th"></div>
+          <div style="height:.5rem"></div>
+          <div class="rating-row">
+            <span class="stars">★★★★★</span>
+            <span class="rating-num" id="p-rating"></span>
+            <span class="rating-reviews" id="p-reviews"></span>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Price -->
+        <div class="price-row">
+          <span class="price-label">ราคา</span>
+          <span class="price-value" id="p-price"></span>
+          <span class="price-per" id="p-per"></span>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Variant Selector -->
+        <div class="variant-section">
+          <div class="variant-label">เลือกประเภทบาร์: <strong id="variant-selected-name"></strong></div>
+          <div class="variant-grid" id="variant-grid">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Nutrition -->
+        <div>
+          <div
+            style="font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+            สารอาหาร / แท่ง</div>
+          <div class="nutrition-row" id="p-chips"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Benefits -->
+        <div>
+          <div
+            style="font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+            ประโยชน์</div>
+          <div class="benefits" id="p-benefits"></div>
+        </div>
+
+      </div>
+
+      <!-- Buy Box (right col on wide, bottom on mobile) -->
+      <div class="buy-col" style="grid-column:3;grid-row:2 / span 2" id="buy-col">
+        <div class="buy-box">
+
+          <div>
+            <div class="buy-box-price" id="bb-price"></div>
+            <div class="buy-box-price-sub" id="bb-price-sub"></div>
+          </div>
+
+          <div class="buy-box-status">In Stock</div>
+
+          <div class="buy-hr"></div>
+
+          <!-- Qty -->
+          <div class="qty-wrap">
+            <label for="qty-select">จำนวน (Quantity)</label>
+            <div class="qty-select-row">
+              <div class="custom-qty-control">
+                <button type="button" onclick="updateQtyUI(-1)">-</button>
+                <input type="number" id="qty-select" value="1" min="1">
+                <button type="button" onclick="updateQtyUI(1)">+</button>
+              </div>
+              <span class="qty-total">รวม: <strong id="qty-total-price"></strong></span>
+            </div>
+          </div>
+
+          <button class="btn-add-cart" id="btn-add">🛒 Add to Cart</button>
+          <button class="btn-buy-now" id="btn-buy">⚡ Buy Now</button>
+
+          <div class="buy-hr"></div>
+
+          <div class="buy-box-deliver">
+            <div class="deliver-row"><span>🚚</span><span>จัดส่งฟรี <strong>เมื่อซื้อครบ ฿500</strong></span></div>
+            <div class="deliver-row"><span>📦</span><span>จัดส่งภายใน <strong>1–3 วันทำการ</strong></span></div>
+            <div class="deliver-row"><span>↩️</span><span>คืนสินค้าได้ภายใน <strong>7 วัน</strong></span></div>
+            <div class="deliver-row"><span>🔒</span><span>ชำระเงินปลอดภัย</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
+  </div>
+
+  <script>
+    /* ================================================
+       PRODUCT DATA
+       ================================================ */
+    const PRODUCTS = {
+      protein: {
+        name: 'Protein Bar',
+        nameTh: 'บาร์โปรตีน — หมวดที่ 1',
+        img: 'images/Protein.png',
+        icon: '💪',
+        price: 30,
+        isBox: false,
+        color: '#3ec97a',
+        rating: '4.9', reviews: '1,243 reviews',
+        chips: [{ v: '22g', l: 'Protein' }, { v: '210 kcal', l: 'Calories' }, { v: '18g', l: 'Carbs' }, { v: '7g', l: 'Fat' }],
+        benefits: [
+          { i: '💪', t: 'โปรตีน 22 กรัมต่อแท่ง — ช่วยสร้างและซ่อมแซมกล้ามเนื้อ' },
+          { i: '🐟', t: 'โปรตีนจากปลาแซลมอน ไข่ไก่ และถั่วคุณภาพสูง' },
+          { i: '⚡', t: 'พลังงานสูง เหมาะก่อน/หลังออกกำลังกาย' },
+          { i: '🚫', t: 'ไม่มีน้ำตาลเทียม — สะอาดและปลอดภัย' },
+        ],
+      },
+      carbohydrate: {
+        name: 'Carbohydrate Bar',
+        nameTh: 'บาร์คาร์โบไฮเดรต — หมวดที่ 2',
+        img: 'images/Carbohydrate.png',
+        icon: '⚡',
+        price: 30,
+        isBox: false,
+        color: '#f5c842',
+        rating: '4.8', reviews: '987 reviews',
+        chips: [{ v: '35g', l: 'Carbs' }, { v: '230 kcal', l: 'Calories' }, { v: '5g', l: 'Fiber' }, { v: '8g', l: 'Sugar' }],
+        benefits: [
+          { i: '🌾', t: 'ธัญพืชเต็มเมล็ด ให้พลังงานยาวนาน' },
+          { i: '🔋', t: 'คาร์โบไฮเดรตเชิงซ้อน — ไม่พุ่งแล้วดิ่ง' },
+          { i: '🫘', t: 'ใยอาหาร 5 กรัม เสริมระบบย่อยอาหาร' },
+          { i: '🏃', t: 'เหมาะสำหรับนักกีฬาและผู้ที่ต้องการพลังงานสูง' },
+        ],
+      },
+      vitamin: {
+        name: 'Vitamin Bar',
+        nameTh: 'บาร์วิตามิน — หมวดที่ 3',
+        img: 'images/Vitamin.png',
+        icon: '🌿',
+        price: 30,
+        isBox: false,
+        color: '#7ed957',
+        rating: '4.7', reviews: '756 reviews',
+        chips: [{ v: '60mg', l: 'Vit C' }, { v: '15mg', l: 'Vit E' }, { v: '2mg', l: 'Vit B6' }, { v: '180 kcal', l: 'Calories' }],
+        benefits: [
+          { i: '🫐', t: 'Berry Mix — วิตามิน C สูง เสริมภูมิคุ้มกัน' },
+          { i: '🥭', t: 'มะม่วงสด — วิตามิน A และแคโรทีนอยด์' },
+          { i: '🌿', t: 'ผักใบเขียว — วิตามิน K และโฟเลต' },
+          { i: '✨', t: 'ต้านอนุมูลอิสระ ดูแลผิวพรรณ' },
+        ],
+      },
+      mineral: {
+        name: 'Mineral Bar',
+        nameTh: 'บาร์แร่ธาตุ — หมวดที่ 4',
+        img: 'images/Mineral.png',
+        icon: '💧',
+        price: 30,
+        isBox: false,
+        color: '#2db8c8',
+        rating: '4.8', reviews: '624 reviews',
+        chips: [{ v: '300mg', l: 'Calcium' }, { v: '80mg', l: 'Magnesium' }, { v: '5mg', l: 'Zinc' }, { v: '8mg', l: 'Iron' }],
+        benefits: [
+          { i: '🦴', t: 'แคลเซียม 300 มก. — เสริมสร้างกระดูกและฟัน' },
+          { i: '😴', t: 'แมกนีเซียม — ผ่อนคลายกล้ามเนื้อ นอนหลับดีขึ้น' },
+          { i: '🛡️', t: 'สังกะสี — เสริมภูมิคุ้มกันและสุขภาพผิว' },
+          { i: '🩸', t: 'ธาตุเหล็ก — ป้องกันโลหิตจาง' },
+        ],
+      },
+      fat: {
+        name: 'Healthy Fat Bar',
+        nameTh: 'บาร์ไขมันดี — หมวดที่ 5',
+        img: 'images/Fat.png',
+        icon: '🥑',
+        price: 30,
+        isBox: false,
+        color: '#ff9f2f',
+        rating: '4.9', reviews: '892 reviews',
+        chips: [{ v: '1.2g', l: 'Omega-3' }, { v: '4g', l: 'MCT' }, { v: '12mg', l: 'Vit E' }, { v: '220 kcal', l: 'Calories' }],
+        benefits: [
+          { i: '🧠', t: 'Omega-3 จากอะโวคาโด — บำรุงสมองและความจำ' },
+          { i: '🫀', t: 'เพิ่ม HDL — ดูแลหัวใจและหลอดเลือด' },
+          { i: '🍫', t: 'โกโก้ดาร์ก — สารต้านอนุมูลอิสระสูง' },
+          { i: '🌰', t: 'อัลมอนด์ — วิตามิน E และแมกนีเซียม' },
+        ],
+      },
+
+    };
+
+    /* ================================================
+       STATE
+       ================================================ */
+    let currentKey = 'protein';
+    function initCartBadge() {
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+      const cartBadge = document.getElementById('cart-count');
+      if (cartBadge) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+      }
+    }
+    initCartBadge();
+
+    /* Expose current key to the Three.js module */
+    window.getCurrentProductKey = () => currentKey;
+
+    const thumbs = [
+      { key: 'protein', img: 'images/Protein.png' },
+      { key: 'carbohydrate', img: 'images/Carbohydrate.png' },
+      { key: 'vitamin', img: 'images/Vitamin.png' },
+      { key: 'mineral', img: 'images/Mineral.png' },
+      { key: 'fat', img: 'images/Fat.png' },
+    ];
+
+    /* ================================================
+       BUILD STATIC UI ELEMENTS (thumbnails + variants)
+       ================================================ */
+    function buildThumbs() {
+      const col = document.getElementById('thumb-col');
+      thumbs.forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'thumb-item';
+        el.dataset.key = t.key;
+        el.innerHTML = `<img src="${t.img}" alt="${t.key}" loading="lazy">`;
+        el.addEventListener('click', () => selectProduct(t.key));
+        col.appendChild(el);
+      });
+    }
+
+    function buildVariants() {
+      const grid = document.getElementById('variant-grid');
+      thumbs.forEach(t => {
+        const p = PRODUCTS[t.key];
+        const el = document.createElement('div');
+        el.className = 'variant-card';
+        el.dataset.key = t.key;
+        el.innerHTML = `
+          <img class="vc-img" src="${t.img}" alt="${p.name}" loading="lazy">
+          <span class="vc-name">${p.name.replace(' Bar', '').replace(' — ครบ 5 หมวด', '')}</span>
+          <span class="vc-price">${p.isBox ? '฿300/กล่อง' : '฿30/แท่ง'}</span>
+        `;
+        el.addEventListener('click', () => selectProduct(t.key));
+        grid.appendChild(el);
+      });
+    }
+
+    /* ================================================
+       SELECT PRODUCT
+       ================================================ */
+    function selectProduct(key, animate = true) {
+      currentKey = key;
+      const p = PRODUCTS[key];
+
+      // URL
+      history.replaceState(null, '', `order.html?product=${key}`);
+
+      // Breadcrumb
+      document.getElementById('bc-name').textContent = p.name;
+      document.title = `${p.name} — Fit-Grid`;
+
+      // Active thumbnail
+      document.querySelectorAll('.thumb-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.key === key);
+      });
+
+      // Active variant card
+      document.querySelectorAll('.variant-card').forEach(el => {
+        el.classList.toggle('selected', el.dataset.key === key);
+      });
+      document.getElementById('variant-selected-name').textContent = p.name;
+
+      // Main image swap + scale class
+      const img = document.getElementById('main-img');
+      img.classList.add('fade-out');
+      setTimeout(() => {
+        img.src = p.img;
+        img.alt = p.name;
+        img.classList.remove('fade-out');
+        img.classList.toggle('img-is-bar', !p.isBox);
+        img.classList.toggle('img-is-box', p.isBox);
+        // Notify 3D viewer of product change
+        if (window.on3DProductChange) window.on3DProductChange(key);
+      }, 200);
+
+      // Badge
+      const badge = document.getElementById('main-badge');
+      badge.textContent = p.icon + ' ' + (p.isBox ? 'Box Set' : 'หมวดที่ ' + (['protein', 'carbohydrate', 'vitamin', 'mineral', 'fat'].indexOf(key) + 1));
+      badge.style.cssText = `background:${p.color}22;color:${p.color};border:1px solid ${p.color}88`;
+
+      // Info
+      if (animate) {
+        const infoText = document.getElementById('info-text');
+        infoText.classList.remove('info-animate');
+        void infoText.offsetWidth;
+        infoText.classList.add('info-animate');
+      }
+
+      document.getElementById('p-name').textContent = p.name;
+      document.getElementById('p-name-th').textContent = p.nameTh;
+      document.getElementById('p-rating').textContent = p.rating;
+      document.getElementById('p-reviews').textContent = `(${p.reviews})`;
+
+      // Price
+      const priceStr = p.isBox ? '฿300' : '฿30';
+      const perStr = p.isBox ? '/ กล่อง (5 แท่ง)' : '/ แท่ง';
+      document.getElementById('p-price').textContent = priceStr;
+      document.getElementById('p-per').textContent = perStr;
+
+      // Buy box
+      document.getElementById('bb-price').textContent = priceStr;
+      document.getElementById('bb-price-sub').textContent = perStr;
+
+      // Chips
+      document.getElementById('p-chips').innerHTML = p.chips
+        .map(c => `<span class="n-chip"><strong>${c.v}</strong> ${c.l}</span>`).join('');
+
+      // Benefits
+      document.getElementById('p-benefits').innerHTML = p.benefits
+        .map(b => `<div class="benefit"><span class="bi">${b.i}</span><span>${b.t}</span></div>`).join('');
+
+      // Reset qty
+      document.getElementById('qty-select').value = '1';
+      updateTotal();
+    }
+
+    /* ================================================
+       QUANTITY + TOTAL
+       ================================================ */
+    function updateTotal() {
+      const qty = parseInt(document.getElementById('qty-select').value);
+      const price = PRODUCTS[currentKey].price;
+      document.getElementById('qty-total-price').textContent = `฿${(qty * price).toLocaleString()}`;
+    }
+
+    function updateQtyUI(delta) {
+      const input = document.getElementById('qty-select');
+      let val = parseInt(input.value) || 0;
+      val += delta;
+      if (val < 1) val = 1;
+      input.value = val;
+      updateTotal();
+    }
+
+    document.getElementById('qty-select').addEventListener('input', () => {
+      const input = document.getElementById('qty-select');
+      let val = parseInt(input.value);
+      if (isNaN(val)) return; // Allow empty state while typing
+      if (val < 1) val = 1;
+      input.value = val;
+      updateTotal();
+    });
+
+    /* ================================================
+       CART / BUY
+       ================================================ */
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-msg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    document.getElementById('btn-add').addEventListener('click', () => {
+      const qty = parseInt(document.getElementById('qty-select').value);
+
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const existing = cart.find(item => item.id === currentKey);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({ id: currentKey, qty: qty });
+      }
+      localStorage.setItem('fitgrid_cart', JSON.stringify(cart));
+
+      initCartBadge();
+      showToast('✅', `เพิ่ม ${PRODUCTS[currentKey].name} ×${qty} ลงตะกร้าแล้ว!`);
+    });
+
+    document.getElementById('btn-buy').addEventListener('click', () => {
+      const qty = parseInt(document.getElementById('qty-select').value);
+
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const existing = cart.find(item => item.id === currentKey);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({ id: currentKey, qty: qty });
+      }
+      localStorage.setItem('fitgrid_cart', JSON.stringify(cart));
+
+      window.location.href = 'cart.html';
+    });
+
+    /* ================================================
+       NAVBAR
+       ================================================ */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      const open = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open', open);
+    });
+
+    /* ================================================
+       INIT
+       ================================================ */
+    buildThumbs();
+    buildVariants();
+
+    const urlKey = new URLSearchParams(window.location.search).get('product');
+    const initKey = PRODUCTS[urlKey] ? urlKey : 'protein';
+    selectProduct(initKey, false);
+    // Apply scale immediately on load (no fade animation)
+    const initImg = document.getElementById('main-img');
+    initImg.classList.toggle('img-is-bar', !PRODUCTS[initKey].isBox);
+    initImg.classList.toggle('img-is-box', PRODUCTS[initKey].isBox);
+  </script>
+
+  <!-- ░░░ THREE.JS 3D VIEWER ░░░ -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    /* ── GLB map ── */
+    const GLB_MAP = {
+      protein: 'Model/ProteinBar.glb',
+      carbohydrate: 'Model/CarbohydrateBar.glb',
+      vitamin: 'Model/VitaminBar.glb',
+      mineral: 'Model/MineralBar.glb',
+      fat: 'Model/HealthyFatBar.glb',
+
+    };
+
+    /* ── Three.js core ── */
+    const canvas = document.getElementById('three-canvas');
+    const wrap = document.getElementById('main-img-wrap');
+    const loader3d = document.getElementById('three-loader');
+    const hint = document.getElementById('rotate-hint');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
+    camera.position.set(0, 1, 3.5);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.2;
+    controls.minDistance = 0.5;
+    controls.maxDistance = 8;
+    controls.enablePan = false;
+
+    /* Stop auto-rotate on user interaction */
+    controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+    /* Lighting */
+    const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+    scene.add(ambient);
+
+    const key = new THREE.DirectionalLight(0xffffff, 2.5);
+    key.position.set(3, 5, 4);
+    key.castShadow = true;
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0x88ccff, 0.8);
+    fill.position.set(-4, 2, -3);
+    scene.add(fill);
+
+    const rim = new THREE.DirectionalLight(0x2db8c8, 0.6);
+    rim.position.set(0, -3, -5);
+    scene.add(rim);
+
+    /* State */
+    let currentMesh = null;
+    let viewMode = '2d';
+    let animFrameId = null;
+    let resizeObserver;
+
+    /* ── Resize helper ── */
+    function syncSize() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    /* ── Render loop ── */
+    function animate() {
+      animFrameId = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    /* ── Load model ── */
+    const gltfLoader = new GLTFLoader();
+    const modelCache = {};
+
+    function loadModel(key) {
+      return new Promise((resolve, reject) => {
+        if (modelCache[key]) { resolve(modelCache[key]); return; }
+        gltfLoader.load(
+          GLB_MAP[key],
+          gltf => { modelCache[key] = gltf; resolve(gltf); },
+          undefined,
+          reject
+        );
+      });
+    }
+
+    function clearScene() {
+      if (currentMesh) {
+        scene.remove(currentMesh);
+        currentMesh = null;
+      }
+    }
+
+    function fitCamera(object) {
+      const box = new THREE.Box3().setFromObject(object);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      let dist = maxDim / (2 * Math.tan(fov / 2));
+      dist *= 1.55;
+
+      object.position.sub(center);   // centre the model
+      camera.position.set(0, maxDim * 0.18, dist);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    async function show3D(productKey) {
+      loader3d.classList.add('visible');
+      try {
+        const gltf = await loadModel(productKey);
+        clearScene();
+        const model = gltf.scene.clone();
+        // Enable shadows on all meshes
+        model.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = true;
+            n.receiveShadow = true;
+          }
+        });
+        scene.add(model);
+        currentMesh = model;
+        fitCamera(model);
+        controls.autoRotate = true;
+      } catch (e) {
+        console.error('GLB load error:', e);
+      } finally {
+        loader3d.classList.remove('visible');
+      }
+    }
+
+    /* ── Public toggle function (called from HTML) ── */
+    window.setView = function (mode) {
+      viewMode = mode;
+      const img = document.getElementById('main-img');
+      const btn2d = document.getElementById('btn-view-2d');
+      const btn3d = document.getElementById('btn-view-3d');
+
+      btn2d.classList.toggle('active', mode === '2d');
+      btn3d.classList.toggle('active', mode === '3d');
+
+      if (mode === '3d') {
+        img.style.display = 'none';
+        canvas.classList.add('visible');
+        hint.classList.add('visible');
+        syncSize();
+        /* Use the global currentKey from the page script */
+        const key = window.getCurrentProductKey ? window.getCurrentProductKey() : 'protein';
+        show3D(key);
+        if (!animFrameId) animate();
+
+        /* Watch for size changes */
+        if (!resizeObserver) {
+          resizeObserver = new ResizeObserver(syncSize);
+          resizeObserver.observe(wrap);
+        }
+      } else {
+        img.style.display = '';
+        canvas.classList.remove('visible');
+        hint.classList.remove('visible');
+      }
+    };
+
+    /* ── Re-load 3D when product changes while in 3D mode ── */
+    window.on3DProductChange = function (key) {
+      if (viewMode === '3d') show3D(key);
+    };
+  </script>
+
+  <!-- Login Modal -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="loginCloseBtn">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Logged in successfully!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Don't have an account? <a href="#signup" class="nav-signup-btn-link">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="signupCloseBtn">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers and updates</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Account created successfully!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="John Doe" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Already have an account? <a href="#login" class="nav-login-btn-link">Log in here</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Modal Logic */
+    const loginModal = document.getElementById('loginModal');
+    const signupModal = document.getElementById('signupModal');
+
+    const loginBtns = document.querySelectorAll('.nav-login-btn');
+    const signupBtns = document.querySelectorAll('.nav-signup-btn');
+    const loginLinkBtns = document.querySelectorAll('.nav-login-btn-link');
+    const signupLinkBtns = document.querySelectorAll('.nav-signup-btn-link');
+
+    const loginCloseBtn = document.getElementById('loginCloseBtn');
+    const signupCloseBtn = document.getElementById('signupCloseBtn');
+
+    // Open Login
+    const openLogin = (e) => {
+      e.preventDefault();
+      signupModal.classList.remove('active');
+      loginModal.classList.add('active');
+    };
+    loginBtns.forEach(btn => btn.addEventListener('click', openLogin));
+    loginLinkBtns.forEach(btn => btn.addEventListener('click', openLogin));
+
+    // Open Sign Up
+    const openSignup = (e) => {
+      e.preventDefault();
+      loginModal.classList.remove('active');
+      signupModal.classList.add('active');
+    };
+    signupBtns.forEach(btn => btn.addEventListener('click', openSignup));
+    signupLinkBtns.forEach(btn => btn.addEventListener('click', openSignup));
+
+    // Close buttons
+    loginCloseBtn.addEventListener('click', () => loginModal.classList.remove('active'));
+    signupCloseBtn.addEventListener('click', () => signupModal.classList.remove('active'));
+
+    // Click outside to close
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) loginModal.classList.remove('active');
+    });
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) signupModal.classList.remove('active');
+    });
+  </script>
+</body>
+
+</html>

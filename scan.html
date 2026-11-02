@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan Box QR — Fit-Grid</title>
+  <meta name="description" content="สแกน QR Code บนกล่อง Fit-Grid Custom Box ของคุณเพื่อดูข้อมูลโภชนาการและส่วนประกอบทั้งหมด" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <style>
+    /* ================================================
+       SCAN PAGE STYLES
+       ================================================ */
+    .scan-page {
+      min-height: 100vh;
+      padding-top: 100px;
+      padding-bottom: 5rem;
+      background: linear-gradient(160deg, #0a1628 0%, #0d1f3c 40%, #120d2e 100%);
+      position: relative;
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    /* Ambient glow blobs */
+    .scan-page::before {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(45,184,200,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .scan-page::after {
+      content: '';
+      position: fixed;
+      bottom: -200px; left: -200px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(200,125,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .scan-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .scan-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    
+    .scan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(45,184,200,0.12);
+      border: 1px solid rgba(45,184,200,0.3);
+      border-radius: 100px;
+      padding: 0.28rem 0.9rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--teal-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.9rem;
+    }
+
+    .scan-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      margin-bottom: 1rem;
+    }
+
+    .scan-title span {
+      background: linear-gradient(135deg, var(--teal-bright), var(--green-fresh));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .scan-desc {
+      color: rgba(255,255,255,0.6);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Scanner Window */
+    .scanner-wrapper {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scanner-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1rem;
+      background: rgba(0,0,0,0.4);
+      border-radius: 16px;
+      border: 2px dashed rgba(45,184,200,0.4);
+    }
+
+    .scanner-placeholder .cam-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+
+    .scanner-placeholder h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: var(--teal-bright);
+    }
+
+    .scanner-placeholder p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 1.5rem;
+      max-width: 250px;
+    }
+
+    .scanner-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-start-scan {
+      background: var(--teal-bright);
+      color: #000;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-start-scan:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(45,184,200,0.4);
+    }
+
+    .btn-upload-scan {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-upload-scan:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    #reader {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      border: 2px solid rgba(45,184,200,0.5);
+      display: none;
+    }
+    
+    #reader video {
+      border-radius: 14px;
+      object-fit: cover;
+    }
+
+    /* Results Panel */
+    .results-panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(200,125,255,0.3);
+      border-radius: 24px;
+      padding: 2rem;
+      width: 100%;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      display: none; /* hidden by default */
+      animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    .results-panel.active {
+      display: block;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .box-id {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .box-id span {
+      color: rgba(200,125,255,1);
+    }
+
+    .total-bars {
+      background: rgba(200,125,255,0.15);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #c87dff;
+    }
+
+    .bar-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-qty {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-name {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card.protein { border-bottom: 3px solid #3ec97a; }
+    .stat-card.protein .stat-qty { color: #3ec97a; }
+    
+    .stat-card.carb { border-bottom: 3px solid #f5c842; }
+    .stat-card.carb .stat-qty { color: #f5c842; }
+
+    .stat-card.vitamin { border-bottom: 3px solid #7ed957; }
+    .stat-card.vitamin .stat-qty { color: #7ed957; }
+
+    .stat-card.mineral { border-bottom: 3px solid #2db8c8; }
+    .stat-card.mineral .stat-qty { color: #2db8c8; }
+
+    .stat-card.fat { border-bottom: 3px solid #ff9f2f; }
+    .stat-card.fat .stat-qty { color: #ff9f2f; }
+
+    .rescan-btn {
+      margin-top: 2rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 0.8rem 2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    
+    .rescan-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Modal Styles */
+    .login-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .login-modal-overlay.active {
+      opacity: 1; visibility: visible;
+    }
+    .login-modal {
+      background: #0a1628;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 90%; max-width: 400px;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .login-modal-overlay.active .login-modal {
+      transform: translateY(0);
+    }
+    .login-close-btn {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 1.2rem; cursor: pointer;
+    }
+    .login-modal h2 { margin-bottom: 0.5rem; color: #fff; }
+    .login-modal p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 2rem; }
+    .login-form-group { margin-bottom: 1rem; }
+    .login-form-group label {
+      display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7);
+      margin-bottom: 0.4rem;
+    }
+    .login-form-group input {
+      width: 100%; padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #fff;
+    }
+    .login-submit-btn {
+      width: 100%; padding: 0.9rem;
+      background: var(--teal-bright); color: #000;
+      border: none; border-radius: 10px;
+      font-weight: 700; cursor: pointer; margin-top: 1rem;
+    }
+    .login-modal-footer {
+      margin-top: 1.5rem; text-align: center;
+      font-size: 0.85rem; color: rgba(255,255,255,0.5);
+    }
+    .login-modal-footer a { color: var(--teal-bright); text-decoration: none; }
+  </style>
+</head>
+<body>
+  
+  <!-- ░░░ NAVBAR ░░░ -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+
+      <ul class="nav-links">
+        <li>
+          <a href="index.html" id="nav-home">
+            <span class="nav-icon">🏠</span> Home
+          </a>
+        </li>
+        <li class="nav-dropdown">
+          <a href="order.html" id="nav-products">
+            <span class="nav-icon">🍫</span> Products
+            <span class="chevron">▼</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="order.html?product=protein">
+                <span class="dropdown-icon dd-protein">💪</span>
+                <span>Protein Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 1</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="order.html?product=carbohydrate">
+                <span class="dropdown-icon dd-carb">⚡</span>
+                <span>Carbohydrate Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 2</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="order.html?product=vitamin">
+                <span class="dropdown-icon dd-vitamin">🌿</span>
+                <span>Vitamin Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 3</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="order.html?product=mineral">
+                <span class="dropdown-icon dd-mineral">💧</span>
+                <span>Mineral Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 4</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="order.html?product=fat">
+                <span class="dropdown-icon dd-fat">🥑</span>
+                <span>Healthy Fat Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 5</small></span>
+              </a>
+            </li>
+            <li class="dropdown-divider"></li>
+            <li>
+              <a href="box-order.html" style="color:#c87dff">
+                <span class="dropdown-icon dd-box">🎨</span>
+                <span>Custom Box Builder <small style="display:block;opacity:.55;font-size:.72rem">เลือกเองได้ — ฿300 คงที่</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="scan.html" style="color:#2db8c8" class="active">
+                <span class="dropdown-icon" style="background:rgba(45,184,200,0.2)">📷</span>
+                <span>Scan QR Box <small style="display:block;opacity:.55;font-size:.72rem">ดูส่วนประกอบในกล่อง</small></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="chatbot.html" id="nav-nutrition">
+            <span class="nav-icon">🤖</span> AI Chat
+          </a>
+        </li>
+        <li>
+          <a href="howto.html" id="nav-how">
+            <span class="nav-icon">🍳</span> How to Cook
+          </a>
+        </li>
+        <li>
+          <a href="index.html#about" id="nav-about">
+            <span class="nav-icon">🌟</span> About
+          </a>
+        </li>
+        <li>
+          <a href="contact.html" id="nav-contact">
+            <span class="nav-icon">📩</span> Contact
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span class="nav-login-text">Login</span></a>
+        <a href="#signup" class="nav-cta nav-signup-btn">✨ Sign Up</a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="scan-page">
+    <div class="scan-container">
+      
+      <div class="scan-header" id="scan-header">
+        <div class="scan-badge">📷 Box Scanner</div>
+        <h1 class="scan-title">Scan Your <span>Custom Box</span></h1>
+        <p class="scan-desc">Scan the QR code on your Fit-Grid Box to instantly see what bars are inside.</p>
+      </div>
+
+      <!-- Scanner Area -->
+      <div class="scanner-wrapper" id="scanner-wrapper">
+        <div class="scanner-placeholder" id="scanner-placeholder">
+           <div class="cam-icon">📷</div>
+           <h3>Ready to Scan</h3>
+           <p>Position the QR code inside the frame to see your box contents.</p>
+           
+           <div class="scanner-actions">
+             <button class="btn-start-scan" id="btn-start-scan">📷 Camera</button>
+             <label for="file-scan" class="btn-upload-scan">📁 Upload Image</label>
+             <input type="file" id="file-scan" accept="image/*" style="display:none;" />
+           </div>
+        </div>
+        <div id="reader"></div>
+      </div>
+
+      <!-- Results Area -->
+      <div class="results-panel" id="results-panel">
+        <div class="results-header">
+          <div class="box-id">Order <span id="res-order-id">#FG-0000</span></div>
+          <div class="total-bars"><span id="res-total">20</span> Bars Total</div>
+        </div>
+
+        <div class="bar-stats-grid">
+          
+          <div class="stat-card protein">
+            <div class="stat-icon">💪</div>
+            <div class="stat-qty" id="qty-protein">0</div>
+            <div class="stat-name">Protein</div>
+          </div>
+
+          <div class="stat-card carb">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-qty" id="qty-carb">0</div>
+            <div class="stat-name">Carb</div>
+          </div>
+
+          <div class="stat-card vitamin">
+            <div class="stat-icon">🌿</div>
+            <div class="stat-qty" id="qty-vitamin">0</div>
+            <div class="stat-name">Vitamin</div>
+          </div>
+
+          <div class="stat-card mineral">
+            <div class="stat-icon">💧</div>
+            <div class="stat-qty" id="qty-mineral">0</div>
+            <div class="stat-name">Mineral</div>
+          </div>
+
+          <div class="stat-card fat">
+            <div class="stat-icon">🥑</div>
+            <div class="stat-qty" id="qty-fat">0</div>
+            <div class="stat-name">Fat</div>
+          </div>
+
+        </div>
+
+        <button class="rescan-btn" id="rescan-btn">📷 Scan Another Box</button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* Navbar logic */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+    const hamburger = document.getElementById('hamburger');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+    });
+
+    // Cart sync
+    function updateCartCount() {
+      const cartStr = localStorage.getItem('fitgrid_cart');
+      let count = 0;
+      if (cartStr) {
+        const cart = JSON.parse(cartStr);
+        count = cart.reduce((acc, item) => acc + item.quantity, 0);
+      }
+      document.getElementById('cart-count').textContent = count;
+    }
+    updateCartCount();
+
+    /* ------------------------------------------------
+       QR SCANNER LOGIC
+       ------------------------------------------------ */
+    let html5QrCode = null;
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          html5QrCode.clear();
+        }).catch(err => console.error("Failed to stop scanner", err));
+      }
+      
+      document.getElementById('scanner-wrapper').style.display = 'none';
+      document.getElementById('scan-header').style.display = 'none';
+      
+      showResults(decodedText);
+    }
+
+    function onScanFailure(error) {
+      // handle scan failure quietly
+    }
+
+    function startCamera() {
+      document.getElementById('scanner-placeholder').style.display = 'none';
+      document.getElementById('reader').style.display = 'block';
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+      
+      html5QrCode.start(
+          { facingMode: "environment" }, 
+          config,
+          onScanSuccess,
+          onScanFailure
+      ).catch(err => {
+          console.error("Error starting camera", err);
+          alert("Camera access denied or unavailable.");
+          document.getElementById('scanner-placeholder').style.display = 'flex';
+          document.getElementById('reader').style.display = 'none';
+      });
+    }
+
+    document.getElementById('btn-start-scan').addEventListener('click', startCamera);
+
+    document.getElementById('file-scan').addEventListener('change', e => {
+      if (e.target.files.length === 0) return;
+      const file = e.target.files[0];
+
+      // Use jsQR for robust static image scanning
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          
+          if (code) {
+            onScanSuccess(code.data, null);
+          } else {
+            // Fallback to html5QrCode if jsQR fails
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.scanFile(file, false)
+              .then(decodedText => onScanSuccess(decodedText, null))
+              .catch(err => {
+                console.error("QR Scan failed", err);
+                alert("Could not detect a QR code in the uploaded image. Please ensure the QR code is clear and try again.");
+              });
+          }
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+      
+      // Reset file input so the user can upload the same file again if needed
+      e.target.value = "";
+    });
+
+    function initScannerUI() {
+      document.getElementById('scanner-wrapper').style.display = 'block';
+      document.getElementById('scan-header').style.display = 'block';
+      document.getElementById('scanner-placeholder').style.display = 'flex';
+      document.getElementById('reader').style.display = 'none';
+      document.getElementById('results-panel').classList.remove('active');
+    }
+
+    // Mock result generator & Smart Data Parser
+    function showResults(qrData) {
+      let orderId = "#FG-0000";
+      let protein = 0, carb = 0, vit = 0, min = 0, fat = 0;
+      let isParsed = false;
+
+      // 1. Try parsing as JSON
+      try {
+        const data = JSON.parse(qrData);
+        if (data.protein !== undefined || data.carb !== undefined || data.fat !== undefined) {
+          orderId = data.orderId || "FG-" + Math.floor(Math.random()*90000 + 10000);
+          protein = parseInt(data.protein) || 0;
+          carb = parseInt(data.carb) || 0;
+          vit = parseInt(data.vitamin) || 0;
+          min = parseInt(data.mineral) || 0;
+          fat = parseInt(data.fat) || 0;
+          isParsed = true;
+        }
+      } catch (e) {}
+
+      // 2. Try parsing as URL params
+      if (!isParsed) {
+        try {
+          const url = new URL(qrData);
+          if (url.searchParams.has('protein') || url.searchParams.has('carb') || url.searchParams.has('fat')) {
+            orderId = url.searchParams.get('orderId') || "FG-" + Math.floor(Math.random()*90000 + 10000);
+            protein = parseInt(url.searchParams.get('protein')) || 0;
+            carb = parseInt(url.searchParams.get('carb')) || 0;
+            vit = parseInt(url.searchParams.get('vitamin')) || 0;
+            min = parseInt(url.searchParams.get('mineral')) || 0;
+            fat = parseInt(url.searchParams.get('fat')) || 0;
+            isParsed = true;
+          }
+        } catch(e) {}
+      }
+
+      // 3. Fallback to hash generator
+      if (!isParsed) {
+        const hash = qrData.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+        orderId = "FG-" + Math.abs(hash).toString().substring(0, 5);
+        
+        let remaining = 20;
+        const getAmt = () => {
+          if(remaining <= 0) return 0;
+          let v = Math.floor(Math.random() * 5) + 2; 
+          if(v > remaining) v = remaining;
+          remaining -= v;
+          return v;
+        };
+
+        protein = getAmt();
+        carb = getAmt();
+        vit = getAmt();
+        min = getAmt();
+        fat = remaining > 0 ? remaining : 0; 
+        
+        const amts = [protein, carb, vit, min, fat].sort(() => Math.random() - 0.5);
+        protein = amts[0]; carb = amts[1]; vit = amts[2]; min = amts[3]; fat = amts[4];
+      }
+      
+      if (!orderId.startsWith('#')) orderId = '#' + orderId;
+      
+      const total = protein + carb + vit + min + fat;
+
+      // Display Data
+      document.getElementById('res-order-id').innerText = orderId;
+      document.getElementById('res-total').innerText = total;
+
+      document.getElementById('qty-protein').innerText = protein;
+      document.getElementById('qty-carb').innerText = carb;
+      document.getElementById('qty-vitamin').innerText = vit;
+      document.getElementById('qty-mineral').innerText = min;
+      document.getElementById('qty-fat').innerText = fat;
+
+      // Show panel
+      document.getElementById('results-panel').classList.add('active');
+    }
+
+    document.getElementById('rescan-btn').addEventListener('click', () => {
+      initScannerUI();
+    });
+
+    // Start scanner on load
+    window.onload = () => {
+      initScannerUI();
+    };
+  </script>
+
+  <!-- Login/Signup Modals (Hidden) -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" onclick="document.getElementById('loginModal').classList.remove('active')">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+      <form onsubmit="event.preventDefault(); alert('Logged in successfully!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+    </div>
+  </div>
+  
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" onclick="document.getElementById('signupModal').classList.remove('active')">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers and updates</p>
+      <form onsubmit="event.preventDefault(); alert('Account created successfully!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label>Full Name</label>
+          <input type="text" placeholder="John Doe" required>
+        </div>
+        <div class="login-form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Modal buttons
+    document.querySelectorAll('.nav-login-btn').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault(); document.getElementById('loginModal').classList.add('active');
+    }));
+    document.querySelectorAll('.nav-signup-btn').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault(); document.getElementById('signupModal').classList.add('active');
+    }));
+  </script>
+
+</body>
+</html>

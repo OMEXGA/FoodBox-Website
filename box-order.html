@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Box Builder — Fit-Grid</title>
+  <meta name="description" content="สร้างกล่องบาร์ตามใจคุณ — เลือกบาร์สูงสุด 20 แท่งจากทุกหมวด ราคาคงที่ ฿300 ต่อกล่อง" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+  <!-- Three.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    /* ================================================
+       BOX BUILDER PAGE STYLES
+       ================================================ */
+
+    :root {
+      --box-purple: #c87dff;
+      --box-purple-dark: #9b4dff;
+      --box-bg: #0a1628;
+      --box-card: rgba(255,255,255,0.04);
+      --box-border: rgba(255,255,255,0.09);
+      --box-price: 300;
+    }
+
+    .box-page {
+      min-height: 100vh;
+      padding-top: 72px;
+      background: linear-gradient(160deg, #0a1628 0%, #0d1f3c 40%, #120d2e 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient glow blobs */
+    .box-page::before {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(200,125,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .box-page::after {
+      content: '';
+      position: fixed;
+      bottom: -200px; left: -200px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(45,184,200,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- Breadcrumb ---- */
+    .breadcrumb-bar {
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--box-border);
+      padding: 0.6rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .breadcrumb {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.4);
+      flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--teal-bright); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .sep { opacity: 0.4; }
+    .breadcrumb .current { color: rgba(255,255,255,0.75); }
+
+    /* ---- Page header ---- */
+    .box-hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .box-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(200,125,255,0.12);
+      border: 1px solid rgba(200,125,255,0.3);
+      border-radius: 100px;
+      padding: 0.28rem 0.9rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--box-purple);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.9rem;
+    }
+
+    .box-hero-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.65rem;
+    }
+    .box-hero-title span {
+      background: linear-gradient(135deg, #c87dff, #2db8c8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .box-hero-sub {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 540px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Key stats strip */
+    .box-stats {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .box-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.85rem;
+    }
+    .box-stat-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .box-stat-icon.purple { background: rgba(200,125,255,0.15); }
+    .box-stat-icon.teal   { background: rgba(45,184,200,0.15); }
+    .box-stat-icon.gold   { background: rgba(245,200,66,0.15); }
+    .box-stat-text strong { color: var(--white); display: block; font-size: 0.95rem; }
+    .box-stat-text span   { color: rgba(255,255,255,0.45); font-size: 0.75rem; }
+
+    /* ---- Builder Layout ---- */
+    .builder-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* ---- Bar picker (left) ---- */
+    .picker-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .picker-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Individual bar type card */
+    .bar-type-card {
+      background: var(--box-card);
+      border: 1px solid var(--box-border);
+      border-radius: 18px;
+      padding: 1.2rem 1.4rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .bar-type-card:hover {
+      border-color: rgba(255,255,255,0.15);
+    }
+    .bar-type-card.has-items {
+      border-color: rgba(200,125,255,0.25);
+      box-shadow: 0 0 20px rgba(200,125,255,0.06);
+    }
+
+    .bar-type-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .bar-type-img {
+      width: 60px; height: 60px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      padding: 6px;
+      flex-shrink: 0;
+    }
+
+    .bar-type-info { flex: 1; }
+    .bar-type-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.15rem;
+    }
+    .bar-type-desc {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.4;
+    }
+
+    .bar-type-count-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .bar-count-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--white);
+    }
+    .bar-count-label {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Stepper */
+    .bar-stepper {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .stepper-btn {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      border: 1.5px solid var(--box-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--white);
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .stepper-btn:hover:not(:disabled) {
+      background: rgba(200,125,255,0.15);
+      border-color: rgba(200,125,255,0.5);
+      transform: scale(1.08);
+    }
+    .stepper-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .stepper-btn.minus:hover:not(:disabled) {
+      background: rgba(255,80,80,0.15);
+      border-color: rgba(255,80,80,0.4);
+    }
+
+    /* Progress bar per type */
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 100px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 0;
+    }
+
+    /* Nutrition mini chips */
+    .bar-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .b-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 0.18rem 0.5rem;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .b-chip strong { color: rgba(255,255,255,0.8); }
+
+    /* ---- Order summary (right sticky) ---- */
+    .summary-col {
+      position: sticky;
+      top: 88px;
+    }
+
+    .summary-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(200,125,255,0.2);
+      border-radius: 20px;
+      padding: 1.5rem;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+
+    .summary-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+    .summary-title {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .summary-reset {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: var(--font-en);
+      transition: color 0.15s;
+    }
+    .summary-reset:hover { color: rgba(255,80,80,0.8); }
+
+    /* Box visual — slots */
+    .box-visual {
+      background: rgba(0,0,0,0.25);
+      border: 1px dashed rgba(200,125,255,0.25);
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.2rem;
+      min-height: 80px;
+    }
+
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .slot {
+      aspect-ratio: 1;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .slot.filled {
+      border-style: solid;
+      border-color: rgba(255,255,255,0.15);
+      animation: slotPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .slot.empty {
+      opacity: 0.35;
+    }
+    @keyframes slotPop {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    /* Breakdown list */
+    .breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .breakdown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+    .breakdown-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.6);
+    }
+    .breakdown-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .breakdown-qty {
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    /* Progress summary */
+    .total-progress {
+      margin-bottom: 1.2rem;
+    }
+    .tp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+    }
+    .tp-label { color: rgba(255,255,255,0.45); }
+    .tp-count { font-weight: 700; color: var(--white); }
+    .tp-max   { color: rgba(255,255,255,0.35); }
+    .tp-track {
+      height: 10px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .tp-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, #c87dff, #2db8c8);
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tp-fill.full {
+      background: linear-gradient(90deg, #3ec97a, #2db8c8);
+      box-shadow: 0 0 12px rgba(62,201,122,0.4);
+    }
+
+    /* Summary divider */
+    .sum-hr { height: 1px; background: rgba(255,255,255,0.07); margin: 1rem 0; }
+
+    /* Price */
+    .sum-price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+    }
+    .sum-price-label { color: rgba(255,255,255,0.45); font-size: 0.8rem; }
+    .sum-price-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+    .sum-price-note {
+      font-size: 0.74rem;
+      color: rgba(255,255,255,0.35);
+      text-align: right;
+      margin-bottom: 1.2rem;
+    }
+
+    /* Warning */
+    .sum-warning {
+      background: rgba(245,200,66,0.08);
+      border: 1px solid rgba(245,200,66,0.25);
+      border-radius: 10px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.76rem;
+      color: rgba(245,200,66,0.85);
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .sum-warning.hidden { display: none; }
+
+    /* Custom Qty Control */
+    .custom-qty-control {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: 20px;
+      padding: 0.35rem 0.6rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .custom-qty-control button {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .custom-qty-control button:hover { background: rgba(255,255,255,0.15); }
+    .custom-qty-control input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      width: 40px;
+      text-align: center;
+      font-size: 1.05rem;
+      outline: none;
+    }
+    .custom-qty-control input::-webkit-outer-spin-button,
+    .custom-qty-control input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .custom-qty-control input[type=number] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    /* Success state */
+    .sum-success {
+      background: rgba(62,201,122,0.08);
+      border: 1px solid rgba(62,201,122,0.25);
+      border-radius: 10px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.76rem;
+      color: rgba(62,201,122,0.9);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .sum-success.hidden { display: none; }
+
+    /* CTA buttons */
+    .btn-build-cart {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 13px;
+      border: 1.5px solid rgba(200,125,255,0.4);
+      background: rgba(200,125,255,0.1);
+      color: var(--box-purple);
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: var(--font-en);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.65rem;
+    }
+    .btn-build-cart:hover:not(:disabled) {
+      background: rgba(200,125,255,0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(200,125,255,0.25);
+    }
+    .btn-build-cart:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-build-now {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 13px;
+      border: none;
+      background: linear-gradient(135deg, #c87dff, #9b4dff);
+      color: #fff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      font-family: var(--font-en);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 20px rgba(155,77,255,0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-build-now:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(155,77,255,0.5);
+    }
+    .btn-build-now:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Delivery info */
+    .sum-deliver {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .sum-deliver-row {
+      display: flex;
+      gap: 0.55rem;
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.38);
+      align-items: flex-start;
+    }
+    .sum-deliver-row strong { color: rgba(255,255,255,0.65); }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: rgba(10,20,40,0.97);
+      border: 1px solid rgba(200,125,255,0.3);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      z-index: 3000;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 900px) {
+      .builder-layout {
+        grid-template-columns: 1fr;
+      }
+      .summary-col {
+        position: static;
+        order: -1;
+      }
+    }
+    @media (max-width: 540px) {
+      .box-hero { padding: 1.5rem 1rem 0; }
+      .builder-layout { padding: 0 1rem 4rem; }
+      .box-stats { gap: 1rem; }
+      .slot-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    /* ---- 3D Modal overlay (full-page) ---- */
+    .three-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5,10,25,0.95);
+      backdrop-filter: blur(12px);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+    .three-modal-overlay.open { display: flex; }
+
+    .three-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 800px;
+    }
+    .three-modal-title {
+      font-size: 1rem;
+      font-weight: 800;
+      flex: 1;
+      color: var(--white);
+    }
+    .three-modal-close {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.8);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .three-modal-close:hover {
+      background: rgba(255,80,80,0.2);
+      border-color: rgba(255,80,80,0.5);
+      color: #ff5050;
+    }
+
+    .three-modal-canvas-wrap {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 4/3;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(200,125,255,0.25);
+      position: relative;
+      background: radial-gradient(ellipse at center, rgba(200,125,255,0.05) 0%, rgba(10,22,40,1) 70%);
+    }
+
+    #box-three-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      cursor: grab;
+    }
+    #box-three-canvas:active { cursor: grabbing; }
+
+    .three-modal-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: rgba(10,22,40,0.8);
+    }
+    .three-modal-loader.hidden { display: none; }
+    .three-ml-ring {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(200,125,255,0.15);
+      border-top-color: #c87dff;
+      border-radius: 50%;
+      animation: spin3d 0.8s linear infinite;
+    }
+    .three-ml-text { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+    @keyframes spin3d { to { transform: rotate(360deg); } }
+
+    .three-modal-hint {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ---- View 3D button inside summary box ---- */
+    .btn-view-3d-box {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 10px;
+      border: 1.5px solid rgba(200,125,255,0.3);
+      background: rgba(200,125,255,0.06);
+      color: var(--box-purple);
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: var(--font-en);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.65rem;
+    }
+    .btn-view-3d-box:hover {
+      background: rgba(200,125,255,0.14);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(200,125,255,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ░░░ NAVBAR ░░░ -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html"><span class="nav-icon">🏠</span> Home</a></li>
+        <li class="nav-dropdown">
+          <a href="order.html" class="active"><span class="nav-icon">🍫</span> Products <span class="chevron">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="order.html?product=protein"><span class="dropdown-icon dd-protein">💪</span><span>Protein Bar</span></a></li>
+            <li><a href="order.html?product=carbohydrate"><span class="dropdown-icon dd-carb">⚡</span><span>Carbohydrate Bar</span></a></li>
+            <li><a href="order.html?product=vitamin"><span class="dropdown-icon dd-vitamin">🌿</span><span>Vitamin Bar</span></a></li>
+            <li><a href="order.html?product=mineral"><span class="dropdown-icon dd-mineral">💧</span><span>Mineral Bar</span></a></li>
+            <li><a href="order.html?product=fat"><span class="dropdown-icon dd-fat">🥑</span><span>Healthy Fat Bar</span></a></li>
+            <li class="dropdown-divider"></li>
+            <li><a href="box-order.html" style="color:#c87dff"><span class="dropdown-icon dd-box">🎨</span><span>Custom Box Builder</span></a></li>
+            <li><a href="scan.html" style="color:#2db8c8"><span class="dropdown-icon" style="background:rgba(45,184,200,0.2)">📷</span><span>Scan QR Box</span></a></li>
+          </ul>
+        </li>
+        <li><a href="chatbot.html"><span class="nav-icon">🤖</span> AI Chat</a></li>
+        <li><a href="howto.html"><span class="nav-icon">🍳</span> How to Cook</a></li>
+        <li><a href="contact.html"><span class="nav-icon">📩</span> Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span class="nav-login-text">Login</span></a>
+        <a href="#signup" class="nav-cta nav-signup-btn">✨ Sign Up</a>
+        <button class="hamburger" id="hamburger" aria-label="menu"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-inner">
+        <a href="index.html">🏠 Home</a>
+        <a href="order.html?product=protein">💪 Protein Bar</a>
+        <a href="order.html?product=carbohydrate">⚡ Carbohydrate Bar</a>
+        <a href="order.html?product=vitamin">🌿 Vitamin Bar</a>
+        <a href="order.html?product=mineral">💧 Mineral Bar</a>
+        <a href="order.html?product=fat">🥑 Healthy Fat Bar</a>
+        <a href="box-order.html" style="color:#c87dff">🎨 Custom Box Builder</a>
+        <a href="scan.html" style="color:#2db8c8">📷 Scan QR Box</a>
+        <a href="chatbot.html">🤖 AI Chat</a>
+        <a href="contact.html">📩 Contact</a>
+        <a href="#signup" class="mobile-cta nav-signup-btn">✨ Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░░ BOX ORDER PAGE ░░░ -->
+  <main class="box-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <nav class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="sep">›</span>
+        <a href="order.html">Products</a>
+        <span class="sep">›</span>
+        <span class="current">🎨 Custom Box Builder</span>
+      </nav>
+    </div>
+
+    <!-- Hero header -->
+    <div class="box-hero">
+      <div class="box-hero-badge">🎨 Custom Box</div>
+      <h1 class="box-hero-title">
+        Build Your <span>Perfect Box</span>
+      </h1>
+      <p class="box-hero-sub">
+        เลือกบาร์สูงสุด <strong style="color:#fff">20 แท่ง</strong> ตามใจคุณจากทุกหมวดสารอาหาร<br>
+        ราคาคงที่ <strong style="color:#c87dff">฿300 ต่อกล่อง</strong> — ไม่ว่าจะเลือกผสมแบบไหน
+      </p>
+      <div class="box-stats">
+        <div class="box-stat">
+          <div class="box-stat-icon purple">🎁</div>
+          <div class="box-stat-text">
+            <strong>สูงสุด 20 แท่ง</strong>
+            <span>ต่อกล่อง</span>
+          </div>
+        </div>
+        <div class="box-stat">
+          <div class="box-stat-icon gold">💰</div>
+          <div class="box-stat-text">
+            <strong>฿300 คงที่</strong>
+            <span>ไม่ว่าจะเลือกแบบไหน</span>
+          </div>
+        </div>
+        <div class="box-stat">
+          <div class="box-stat-icon teal">🍫</div>
+          <div class="box-stat-text">
+            <strong>5 ประเภทบาร์</strong>
+            <span>ผสมกันได้ตามต้องการ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Builder -->
+    <div class="builder-layout">
+
+      <!-- LEFT: bar pickers -->
+      <div class="picker-col">
+        <div class="picker-section-title">เลือกบาร์ของคุณ — แตะ + / − เพื่อปรับจำนวน</div>
+
+        <!-- Bar type cards injected by JS -->
+        <div id="bar-cards"></div>
+      </div>
+
+      <!-- RIGHT: summary -->
+      <div class="summary-col">
+        <div class="summary-box">
+
+          <div class="summary-header">
+            <div class="summary-title">📦 Box Summary</div>
+            <button class="summary-reset" id="btn-reset">↺ Reset</button>
+          </div>
+
+          <!-- Slot visual -->
+          <div class="box-visual">
+            <div class="slot-grid" id="slot-grid">
+              <!-- 20 slots injected by JS -->
+            </div>
+          </div>
+
+          <!-- Breakdown -->
+          <div class="breakdown" id="breakdown">
+            <!-- injected by JS -->
+          </div>
+
+          <!-- Total progress bar -->
+          <div class="total-progress">
+            <div class="tp-header">
+              <span class="tp-label">จำนวนบาร์ในกล่อง</span>
+              <span><span class="tp-count" id="tp-count">0</span> <span class="tp-max">/ 20 แท่ง</span></span>
+            </div>
+            <div class="tp-track">
+              <div class="tp-fill" id="tp-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="sum-hr"></div>
+
+          <!-- Warnings / success -->
+          <div class="sum-warning" id="sum-warning">
+            ⚠️ <span id="warning-text">เพิ่มบาร์อย่างน้อย 1 แท่งเพื่อสั่งซื้อ</span>
+          </div>
+          <div class="sum-success hidden" id="sum-success">
+            ✅ กล่องของคุณพร้อมสั่งซื้อแล้ว!
+          </div>
+
+          <!-- Price -->
+          <div class="sum-price-row">
+            <span class="sum-price-label">ราคารวม</span>
+            <span class="sum-price-value">฿300</span>
+          </div>
+          <div class="sum-price-note">ราคาคงที่ต่อกล่อง — สูงสุด 20 แท่ง</div>
+
+          <!-- Qty of boxes -->
+          <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+            <label style="font-size:.78rem;color:rgba(255,255,255,.45);white-space:nowrap">จำนวนกล่อง:</label>
+            <div class="custom-qty-control" style="flex:1; justify-content: space-between;">
+              <button type="button" onclick="updateBoxQtyUI(-1)">-</button>
+              <input type="number" id="box-qty" value="1" min="1">
+              <button type="button" onclick="updateBoxQtyUI(1)">+</button>
+            </div>
+            <span style="font-size:.8rem;color:rgba(255,255,255,.4)">= <strong id="total-price" style="color:#fff">฿300</strong></span>
+          </div>
+
+          <button class="btn-build-cart" id="btn-add-cart" disabled>🛒 Add to Cart</button>
+          <button class="btn-build-now"  id="btn-order-now" disabled>🎨 Order Custom Box</button>
+
+          <!-- 3D preview button -->
+          <button class="btn-view-3d-box" id="btn-open-3d">🔳 View Box in 3D</button>
+
+          <div class="sum-hr"></div>
+
+          <div class="sum-deliver">
+            <div class="sum-deliver-row">🚚 <span>จัดส่งฟรี <strong>เมื่อซื้อครบ ฿500</strong></span></div>
+            <div class="sum-deliver-row">📦 <span>จัดส่งภายใน <strong>1–3 วันทำการ</strong></span></div>
+            <div class="sum-deliver-row">↩️ <span>คืนสินค้าได้ภายใน <strong>7 วัน</strong></span></div>
+            <div class="sum-deliver-row">🔒 <span>ชำระเงินปลอดภัย</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
+  </div>
+
+  <script>
+    /* ================================================
+       BAR TYPE DATA
+       ================================================ */
+    const BAR_TYPES = [
+      {
+        key: 'protein',
+        name: 'Protein Bar',
+        nameTh: 'บาร์โปรตีน',
+        icon: '💪',
+        emoji: '💪',
+        img: 'images/Protein.png',
+        color: '#3ec97a',
+        chips: ['22g Protein', '210 kcal', '7g Fat'],
+        desc: 'โปรตีน 22 กรัม • จากปลาแซลมอน ไข่ไก่ และถั่ว',
+      },
+      {
+        key: 'carbohydrate',
+        name: 'Carbohydrate Bar',
+        nameTh: 'บาร์คาร์โบไฮเดรต',
+        icon: '⚡',
+        emoji: '⚡',
+        img: 'images/Carbohydrate.png',
+        color: '#f5c842',
+        chips: ['35g Carbs', '230 kcal', '5g Fiber'],
+        desc: 'คาร์โบไฮเดรตเชิงซ้อน • พลังงานยาวนาน',
+      },
+      {
+        key: 'vitamin',
+        name: 'Vitamin Bar',
+        nameTh: 'บาร์วิตามิน',
+        icon: '🌿',
+        emoji: '🌿',
+        img: 'images/Vitamin.png',
+        color: '#7ed957',
+        chips: ['60mg Vit C', 'Vit A–K', '180 kcal'],
+        desc: 'วิตามินครบ A–K • เสริมภูมิคุ้มกัน',
+      },
+      {
+        key: 'mineral',
+        name: 'Mineral Bar',
+        nameTh: 'บาร์แร่ธาตุ',
+        icon: '💧',
+        emoji: '💧',
+        img: 'images/Mineral.png',
+        color: '#2db8c8',
+        chips: ['300mg Ca', '80mg Mg', '5mg Zn'],
+        desc: 'แคลเซียม แมกนีเซียม สังกะสี • เสริมกระดูก',
+      },
+      {
+        key: 'fat',
+        name: 'Healthy Fat Bar',
+        nameTh: 'บาร์ไขมันดี',
+        icon: '🥑',
+        emoji: '🥑',
+        img: 'images/Fat.png',
+        color: '#ff9f2f',
+        chips: ['1.2g Omega-3', '4g MCT', '220 kcal'],
+        desc: 'Omega-3 จากอะโวคาโด • บำรุงสมองและหัวใจ',
+      },
+    ];
+
+    const MAX_BARS = 20;
+    const BOX_PRICE = 300;
+
+    /* ================================================
+       STATE
+       ================================================ */
+    const counts = {};
+    BAR_TYPES.forEach(b => counts[b.key] = 0);
+    function initCartBadge() {
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+      const cartBadge = document.getElementById('cart-count');
+      if (cartBadge) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+      }
+    }
+    initCartBadge();
+
+    function getTotal() {
+      return Object.values(counts).reduce((s, v) => s + v, 0);
+    }
+
+    /* ================================================
+       BUILD BAR CARDS
+       ================================================ */
+    function buildBarCards() {
+      const container = document.getElementById('bar-cards');
+      BAR_TYPES.forEach(bar => {
+        const card = document.createElement('div');
+        card.className = 'bar-type-card';
+        card.id = `card-${bar.key}`;
+        card.innerHTML = `
+          <div class="bar-type-header">
+            <img class="bar-type-img" src="${bar.img}" alt="${bar.name}" loading="lazy">
+            <div class="bar-type-info">
+              <div class="bar-type-name">${bar.icon} ${bar.name}</div>
+              <div class="bar-type-desc">${bar.desc}</div>
+            </div>
+            <div class="bar-type-count-badge">
+              <span class="bar-count-num" id="count-${bar.key}">0</span>
+              <span class="bar-count-label">แท่ง</span>
+            </div>
+          </div>
+          <div class="bar-stepper">
+            <button class="stepper-btn minus" id="minus-${bar.key}" aria-label="ลด ${bar.name}" disabled>−</button>
+            <div class="bar-track">
+              <div class="bar-fill" id="fill-${bar.key}" style="width:0%;background:${bar.color}"></div>
+            </div>
+            <button class="stepper-btn plus"  id="plus-${bar.key}"  aria-label="เพิ่ม ${bar.name}">+</button>
+          </div>
+          <div class="bar-chips">
+            ${bar.chips.map(c => `<span class="b-chip"><strong>${c.split(' ')[0]}</strong> ${c.split(' ').slice(1).join(' ')}</span>`).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+
+        document.getElementById(`plus-${bar.key}`).addEventListener('click', () => adjust(bar.key, 1));
+        document.getElementById(`minus-${bar.key}`).addEventListener('click', () => adjust(bar.key, -1));
+      });
+    }
+
+    /* ================================================
+       BUILD SLOTS
+       ================================================ */
+    function buildSlots() {
+      const grid = document.getElementById('slot-grid');
+      for (let i = 0; i < MAX_BARS; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot empty';
+        slot.id = `slot-${i}`;
+        slot.textContent = '';
+        grid.appendChild(slot);
+      }
+    }
+
+    /* ================================================
+       ADJUST COUNT
+       ================================================ */
+    function adjust(key, delta) {
+      const total = getTotal();
+      const newCount = counts[key] + delta;
+
+      if (delta > 0 && total >= MAX_BARS) return; // at max
+      if (newCount < 0) return;
+
+      counts[key] = newCount;
+      render();
+    }
+
+    /* ================================================
+       RENDER
+       ================================================ */
+    function render() {
+      const total = getTotal();
+      const pct = (total / MAX_BARS) * 100;
+
+      // Update counts & fills per bar type
+      BAR_TYPES.forEach(bar => {
+        const n = counts[bar.key];
+        document.getElementById(`count-${bar.key}`).textContent = n;
+        document.getElementById(`fill-${bar.key}`).style.width = `${(n / MAX_BARS) * 100}%`;
+
+        // Disable/enable steppers
+        const plusBtn  = document.getElementById(`plus-${bar.key}`);
+        const minusBtn = document.getElementById(`minus-${bar.key}`);
+        plusBtn.disabled  = total >= MAX_BARS;
+        minusBtn.disabled = n === 0;
+
+        // Card highlight
+        const card = document.getElementById(`card-${bar.key}`);
+        card.classList.toggle('has-items', n > 0);
+      });
+
+      // Slots visual
+      let slotIdx = 0;
+      BAR_TYPES.forEach(bar => {
+        for (let i = 0; i < counts[bar.key]; i++) {
+          if (slotIdx < MAX_BARS) {
+            const slot = document.getElementById(`slot-${slotIdx}`);
+            slot.className = 'slot filled';
+            slot.textContent = bar.emoji;
+            slot.title = bar.name;
+            slot.style.background = `${bar.color}18`;
+            slot.style.borderColor = `${bar.color}40`;
+            slotIdx++;
+          }
+        }
+      });
+      // Clear remaining slots
+      for (let i = slotIdx; i < MAX_BARS; i++) {
+        const slot = document.getElementById(`slot-${i}`);
+        slot.className = 'slot empty';
+        slot.textContent = '';
+        slot.style.background = '';
+        slot.style.borderColor = '';
+        slot.title = '';
+      }
+
+      // Breakdown
+      const breakdown = document.getElementById('breakdown');
+      const filledTypes = BAR_TYPES.filter(b => counts[b.key] > 0);
+      if (filledTypes.length === 0) {
+        breakdown.innerHTML = `<div style="font-size:.8rem;color:rgba(255,255,255,.25);text-align:center;padding:.5rem 0">ยังไม่ได้เลือกบาร์</div>`;
+      } else {
+        breakdown.innerHTML = filledTypes.map(bar => `
+          <div class="breakdown-row">
+            <div class="breakdown-left">
+              <div class="breakdown-dot" style="background:${bar.color}"></div>
+              <span>${bar.icon} ${bar.nameTh}</span>
+            </div>
+            <span class="breakdown-qty">${counts[bar.key]} แท่ง</span>
+          </div>
+        `).join('');
+      }
+
+      // Progress
+      document.getElementById('tp-count').textContent = total;
+      const fill = document.getElementById('tp-fill');
+      fill.style.width = `${pct}%`;
+      fill.classList.toggle('full', total === MAX_BARS);
+
+      // Warning / success
+      const warning = document.getElementById('sum-warning');
+      const success  = document.getElementById('sum-success');
+      const warnText = document.getElementById('warning-text');
+      const addBtn   = document.getElementById('btn-add-cart');
+      const buyBtn   = document.getElementById('btn-order-now');
+
+      if (total === 0) {
+        warning.classList.remove('hidden');
+        warnText.textContent = 'เลือกรสชาติบาร์ของคุณ (ต้องครบ 20 แท่ง)';
+        success.classList.add('hidden');
+        addBtn.disabled = true;
+        buyBtn.disabled = true;
+      } else if (total < MAX_BARS) {
+        warning.classList.remove('hidden');
+        warnText.textContent = `กรุณาเลือกเพิ่มอีก ${MAX_BARS - total} แท่ง เพื่อให้ครบ 1 กล่อง (20 แท่ง)`;
+        success.classList.add('hidden');
+        addBtn.disabled = true;
+        buyBtn.disabled = true;
+      } else {
+        warning.classList.add('hidden');
+        success.classList.remove('hidden');
+        addBtn.disabled = false;
+        buyBtn.disabled = false;
+      }
+
+      // Box total price
+      const boxQty = parseInt(document.getElementById('box-qty').value);
+      document.getElementById('total-price').textContent = `฿${(BOX_PRICE * boxQty).toLocaleString()}`;
+    }
+
+    /* ================================================
+       RESET
+       ================================================ */
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      BAR_TYPES.forEach(b => counts[b.key] = 0);
+      render();
+    });
+
+    /* ================================================
+       BOX QTY CHANGE
+       ================================================ */
+    document.getElementById('box-qty').addEventListener('input', () => {
+      const input = document.getElementById('box-qty');
+      let val = parseInt(input.value);
+      if (isNaN(val)) return;
+      if (val < 1) val = 1;
+      input.value = val;
+      render();
+    });
+
+    function updateBoxQtyUI(delta) {
+      const input = document.getElementById('box-qty');
+      let val = parseInt(input.value) || 0;
+      val += delta;
+      if (val < 1) val = 1;
+      input.value = val;
+      render();
+    }
+
+    /* ================================================
+       TOAST
+       ================================================ */
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-msg').textContent  = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    /* ================================================
+       ADD TO CART
+       ================================================ */
+    document.getElementById('btn-add-cart').addEventListener('click', () => {
+      const boxQty = parseInt(document.getElementById('box-qty').value);
+      
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const existing = cart.find(item => item.id === 'box');
+      if (existing) {
+        existing.qty += boxQty;
+      } else {
+        cart.push({ id: 'box', qty: boxQty });
+      }
+      localStorage.setItem('fitgrid_cart', JSON.stringify(cart));
+      
+      initCartBadge();
+
+      const summary = BAR_TYPES.filter(b => counts[b.key] > 0)
+        .map(b => `${b.emoji}×${counts[b.key]}`).join(' ');
+      showToast('🛒', `เพิ่ม Custom Box ×${boxQty} ลงตะกร้า! (${summary})`);
+    });
+
+    /* ================================================
+       ORDER NOW
+       ================================================ */
+    document.getElementById('btn-order-now').addEventListener('click', () => {
+      const boxQty = parseInt(document.getElementById('box-qty').value);
+      
+      let cart = JSON.parse(localStorage.getItem('fitgrid_cart')) || [];
+      const existing = cart.find(item => item.id === 'box');
+      if (existing) {
+        existing.qty += boxQty;
+      } else {
+        cart.push({ id: 'box', qty: boxQty });
+      }
+      localStorage.setItem('fitgrid_cart', JSON.stringify(cart));
+      
+      window.location.href = 'cart.html';
+    });
+
+    /* ================================================
+       NAVBAR
+       ================================================ */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      const open = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open', open);
+    });
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+      });
+    });
+
+    /* ================================================
+       INIT
+       ================================================ */
+    buildBarCards();
+    buildSlots();
+    render();
+
+    /* Open 3D modal */
+    document.getElementById('btn-open-3d').addEventListener('click', () => {
+      document.getElementById('three-modal').classList.add('open');
+      if (window.openBoxThreeModal) window.openBoxThreeModal();
+    });
+  </script>
+
+  <!-- 3D Modal -->
+  <div class="three-modal-overlay" id="three-modal">
+    <div class="three-modal-header">
+      <div class="three-modal-title">🔳 Nutrition Box — 3D Preview</div>
+      <button class="three-modal-close" id="modal-close-btn" title="Close">✕</button>
+    </div>
+    <div class="three-modal-canvas-wrap" id="box-canvas-wrap">
+      <canvas id="box-three-canvas"></canvas>
+      <div class="three-modal-loader" id="box-three-loader">
+        <div class="three-ml-ring"></div>
+        <span class="three-ml-text">Loading 3D model…</span>
+      </div>
+    </div>
+    <div class="three-modal-hint">🖱️ Drag to rotate · Scroll to zoom · Double-click to reset</div>
+  </div>
+
+  <!-- Three.js module -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const canvas   = document.getElementById('box-three-canvas');
+    const wrap     = document.getElementById('box-canvas-wrap');
+    const loaderEl = document.getElementById('box-three-loader');
+    const modal    = document.getElementById('three-modal');
+
+    /* Renderer */
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    /* Scene */
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 4/3, 0.01, 200);
+    camera.position.set(0, 1.5, 5);
+
+    /* Controls */
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping   = true;
+    controls.dampingFactor   = 0.07;
+    controls.autoRotate      = true;
+    controls.autoRotateSpeed = 1.0;
+    controls.minDistance     = 0.5;
+    controls.maxDistance     = 20;
+    controls.enablePan       = false;
+    controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+    /* Double-click resets view */
+    canvas.addEventListener('dblclick', () => {
+      controls.autoRotate = true;
+      if (boxModel) fitCamera(boxModel);
+    });
+
+    /* Lighting */
+    scene.add(new THREE.AmbientLight(0xffffff, 1.6));
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
+    keyLight.position.set(4, 6, 5);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xc87dff, 1.0);
+    fillLight.position.set(-5, 2, -4);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x2db8c8, 0.7);
+    rimLight.position.set(0, -4, -6);
+    scene.add(rimLight);
+
+    /* Helpers */
+    function syncSize() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    let animId = null;
+    function animate() {
+      animId = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function fitCamera(object) {
+      const box    = new THREE.Box3().setFromObject(object);
+      const center = box.getCenter(new THREE.Vector3());
+      const size   = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov    = camera.fov * (Math.PI / 180);
+      let   dist   = maxDim / (2 * Math.tan(fov / 2));
+      dist *= 1.6;
+      object.position.sub(center);
+      camera.position.set(0, maxDim * 0.15, dist);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    /* Load GLB */
+    let boxModel  = null;
+    let modelLoaded = false;
+    const loader = new GLTFLoader();
+
+    function loadBoxModel() {
+      if (modelLoaded) return;
+      loaderEl.classList.remove('hidden');
+      loader.load(
+        'Model/NutritionBox.glb',
+        gltf => {
+          modelLoaded = true;
+          const model = gltf.scene;
+          model.traverse(n => {
+            if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }
+          });
+          scene.add(model);
+          boxModel = model;
+          fitCamera(model);
+          controls.autoRotate = true;
+          loaderEl.classList.add('hidden');
+        },
+        undefined,
+        err => {
+          console.error('GLB load error:', err);
+          loaderEl.classList.add('hidden');
+        }
+      );
+    }
+
+    /* Open modal handler */
+    window.openBoxThreeModal = function() {
+      syncSize();
+      loadBoxModel();
+      if (!animId) animate();
+      // Observe resize
+      new ResizeObserver(syncSize).observe(wrap);
+    };
+
+    /* Close button */
+    document.getElementById('modal-close-btn').addEventListener('click', () => {
+      modal.classList.remove('open');
+    });
+    /* Click outside canvas to close */
+    modal.addEventListener('click', e => {
+      if (e.target === modal) modal.classList.remove('open');
+    });
+    /* ESC to close */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') modal.classList.remove('open');
+    });
+  </script>
+
+  <!-- Login Modal -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="loginCloseBtn">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+      <form onsubmit="event.preventDefault(); alert('Logged in successfully!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+      <div class="login-modal-footer">
+        Don't have an account? <a href="#signup" class="nav-signup-btn-link">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="signupCloseBtn">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers and updates</p>
+      <form onsubmit="event.preventDefault(); alert('Account created successfully!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="John Doe" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+      <div class="login-modal-footer">
+        Already have an account? <a href="#login" class="nav-login-btn-link">Log in here</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Modal Logic */
+    const loginModal = document.getElementById('loginModal');
+    const signupModal = document.getElementById('signupModal');
+    const loginBtns = document.querySelectorAll('.nav-login-btn');
+    const signupBtns = document.querySelectorAll('.nav-signup-btn');
+    const loginLinkBtns = document.querySelectorAll('.nav-login-btn-link');
+    const signupLinkBtns = document.querySelectorAll('.nav-signup-btn-link');
+    const loginCloseBtn = document.getElementById('loginCloseBtn');
+    const signupCloseBtn = document.getElementById('signupCloseBtn');
+
+    const openLogin = (e) => {
+      e.preventDefault();
+      signupModal.classList.remove('active');
+      loginModal.classList.add('active');
+    };
+    loginBtns.forEach(btn => btn.addEventListener('click', openLogin));
+    loginLinkBtns.forEach(btn => btn.addEventListener('click', openLogin));
+
+    const openSignup = (e) => {
+      e.preventDefault();
+      loginModal.classList.remove('active');
+      signupModal.classList.add('active');
+    };
+    signupBtns.forEach(btn => btn.addEventListener('click', openSignup));
+    signupLinkBtns.forEach(btn => btn.addEventListener('click', openSignup));
+
+    loginCloseBtn.addEventListener('click', () => loginModal.classList.remove('active'));
+    signupCloseBtn.addEventListener('click', () => signupModal.classList.remove('active'));
+    loginModal.addEventListener('click', (e) => { if (e.target === loginModal) loginModal.classList.remove('active'); });
+    signupModal.addEventListener('click', (e) => { if (e.target === signupModal) signupModal.classList.remove('active'); });
+  </script>
+</body>
+</html>

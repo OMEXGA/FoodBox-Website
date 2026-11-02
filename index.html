@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fit-Grid — บาร์พลังงานสร้างสรรค์สุขภาพ</title>
+  <meta name="description"
+    content="Fit-Grid นิวทริชั่นบาร์ 5 หมวดสารอาหาร — Protein, Carbohydrate, Vitamin, Mineral, Healthy Fat. สั่งซื้อออนไลน์ได้เลย!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+</head>
+
+<body>
+
+  <!-- ░░░ FLOATING PARTICLES ░░░ -->
+  <div class="particles" aria-hidden="true" id="particles"></div>
+
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <!--         NAVBAR           -->
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <header>
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+
+      <!-- LOGO -->
+      <a href="index.html" class="nav-logo" aria-label="Fit-Grid Home">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+
+      <!-- DESKTOP NAV LINKS -->
+      <ul class="nav-links" role="menubar">
+
+        <li role="none">
+          <a href="#" class="active" role="menuitem" id="nav-home">
+            <span class="nav-icon">🏠</span> Home
+          </a>
+        </li>
+
+        <!-- Products Dropdown -->
+        <li class="nav-dropdown" role="none">
+          <a href="order.html" role="menuitem" id="nav-products" aria-haspopup="true" aria-expanded="false">
+            <span class="nav-icon">🍫</span> Products
+            <span class="chevron">▼</span>
+          </a>
+          <ul class="dropdown-menu" role="menu" aria-label="Products submenu">
+            <li role="none">
+              <a href="order.html?product=protein" role="menuitem">
+                <span class="dropdown-icon dd-protein">💪</span>
+                <span>Protein Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 1 —
+                    โปรตีน</small></span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="order.html?product=carbohydrate" role="menuitem">
+                <span class="dropdown-icon dd-carb">⚡</span>
+                <span>Carbohydrate Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 2 —
+                    คาร์โบไฮเดรต</small></span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="order.html?product=vitamin" role="menuitem">
+                <span class="dropdown-icon dd-vitamin">🌿</span>
+                <span>Vitamin Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 3 —
+                    วิตามิน</small></span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="order.html?product=mineral" role="menuitem">
+                <span class="dropdown-icon dd-mineral">💧</span>
+                <span>Mineral Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 4 —
+                    แร่ธาตุ</small></span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="order.html?product=fat" role="menuitem">
+                <span class="dropdown-icon dd-fat">🥑</span>
+                <span>Healthy Fat Bar <small style="display:block;opacity:.55;font-size:.72rem">หมวดที่ 5 —
+                    ไขมันดี</small></span>
+              </a>
+            </li>
+            <li class="dropdown-divider" role="separator"></li>
+            <li role="none">
+              <a href="box-order.html" role="menuitem" style="color:#c87dff">
+                <span class="dropdown-icon dd-box">🎨</span>
+                <span>Custom Box Builder <small style="display:block;opacity:.55;font-size:.72rem">เลือกเองได้ — ฿300
+                    คงที่</small></span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="scan.html" role="menuitem" style="color:#2db8c8">
+                <span class="dropdown-icon" style="background:rgba(45,184,200,0.2)">📷</span>
+                <span>Scan QR Box <small style="display:block;opacity:.55;font-size:.72rem">ดูส่วนประกอบในกล่อง</small></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- AI Chat -->
+        <li role="none">
+          <a href="chatbot.html" role="menuitem" id="nav-nutrition">
+            <span class="nav-icon">🤖</span> AI Chat
+          </a>
+        </li>
+
+        <li role="none">
+          <a href="howto.html" role="menuitem" id="nav-how">
+            <span class="nav-icon">🍳</span> How to Cook
+          </a>
+        </li>
+
+        <li role="none">
+          <a href="#about" role="menuitem" id="nav-about">
+            <span class="nav-icon">🌟</span> About
+          </a>
+        </li>
+
+        <li role="none">
+          <a href="contact.html" role="menuitem" id="nav-contact">
+            <span class="nav-icon">📩</span> Contact
+          </a>
+        </li>
+
+      </ul>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span
+            class="nav-login-text">Login</span></a>
+
+        <!-- Sign Up CTA -->
+        <a href="#signup" class="nav-cta nav-signup-btn" id="nav-shop-cta">
+          ✨ Sign Up
+        </a>
+
+        <!-- Hamburger (mobile) -->
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"
+          aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <div class="mobile-menu-inner">
+        <a href="index.html">🏠 Home</a>
+        <div class="mobile-divider"></div>
+        <a href="order.html?product=protein">💪 Protein Bar — หมวดที่ 1</a>
+        <a href="order.html?product=carbohydrate">⚡ Carbohydrate Bar — หมวดที่ 2</a>
+        <a href="order.html?product=vitamin">🌿 Vitamin Bar — หมวดที่ 3</a>
+        <a href="order.html?product=mineral">💧 Mineral Bar — หมวดที่ 4</a>
+        <a href="order.html?product=fat">🥑 Healthy Fat Bar — หมวดที่ 5</a>
+        <a href="box-order.html" style="color:#c87dff">🎨 Custom Box Builder</a>
+        <a href="scan.html" style="color:#2db8c8">📷 Scan QR Box</a>
+        <div class="mobile-divider"></div>
+        <a href="chatbot.html">🤖 AI Chat</a>
+        <a href="howto.html">🍳 How to Cook</a>
+        <a href="#about">🌟 About</a>
+        <a href="contact.html">📩 Contact</a>
+        <a href="#signup" class="mobile-cta nav-signup-btn">✨ Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <!--      HERO SECTION        -->
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <main>
+    <section class="page-hero" id="hero" aria-label="Hero section">
+      <div class="hero-content">
+
+        <div class="hero-eyebrow" id="hero-eyebrow">
+          สารอาหารครบ 5 หมวด &nbsp;|&nbsp; พลังงานที่ร่างกายต้องการ
+        </div>
+
+        <h1 class="hero-title" id="hero-title">
+          Fuel Your Body<br>
+          <span class="gradient-text">The Right Way</span>
+        </h1>
+
+        <p class="hero-subtitle" id="hero-subtitle">
+          Fit-Grid นิวทริชั่นบาร์ที่แต่ละหมวดให้สารอาหารต่างกัน<br>
+          ครบ&nbsp;5&nbsp;กลุ่ม — โปรตีน · คาร์โบ · วิตามิน · แร่ธาตุ · ไขมันดี
+        </p>
+
+        <!-- 5 bar-type badges -->
+        <div class="hero-badges" id="hero-badges" aria-label="Product types">
+          <span class="hero-badge badge-protein">💪 Protein</span>
+          <span class="hero-badge badge-carb">⚡ Carbohydrate</span>
+          <span class="hero-badge badge-vitamin">🌿 Vitamin</span>
+          <span class="hero-badge badge-mineral">💧 Mineral</span>
+          <span class="hero-badge badge-fat">🥑 Healthy Fat</span>
+        </div>
+
+        <div class="hero-actions">
+          <a href="box-order.html" class="btn-primary" id="hero-cta-primary">
+            📦 Shop Box Set
+          </a>
+          <a href="order.html" class="btn-outline" id="hero-cta-secondary">
+            🍫 See All Bars →
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="scroll-indicator" aria-hidden="true">
+        <div class="scroll-mouse"></div>
+        <span>Scroll</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ░░░ NUTRITION INFO SECTION ░░░ -->
+  <style>
+    /* Nutrition section on index */
+    .index-nutri-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 1.5rem 6rem;
+    }
+    .index-nutri-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .index-nutri-header .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(45,184,200,0.1);
+      border: 1px solid rgba(45,184,200,0.28);
+      border-radius: 100px;
+      padding: 0.32rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--teal-bright);
+      margin-bottom: 1rem;
+    }
+    .index-nutri-header h2 {
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.6rem;
+    }
+    .index-nutri-header h2 span {
+      background: linear-gradient(135deg, var(--teal-bright), var(--green-fresh));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .index-nutri-header p {
+      font-family: var(--font-th);
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.45);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    /* Bar cards */
+    .ni-bar-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .ni-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 1.3rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+      cursor: pointer;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .ni-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--nc);
+      border-radius: 0 0 20px 20px;
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+    .ni-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.18); }
+    .ni-card.active { border-color: var(--nc); box-shadow: 0 0 0 1px var(--nc), 0 8px 28px rgba(0,0,0,0.3); }
+    .ni-card.active::after { opacity: 1; }
+    .ni-card[data-k='protein']      { --nc:#3ec97a; }
+    .ni-card[data-k='carbohydrate'] { --nc:#f5c842; }
+    .ni-card[data-k='vitamin']      { --nc:#7ed957; }
+    .ni-card[data-k='mineral']      { --nc:#2db8c8; }
+    .ni-card[data-k='fat']          { --nc:#ff9f2f; }
+    .ni-card-img { width: 68px; height: 68px; object-fit: contain; }
+    .ni-card-name { font-size: 0.78rem; font-weight: 800; color: var(--nc); text-align: center; }
+    .ni-card-sub  { font-size: 0.64rem; color: rgba(255,255,255,0.32); }
+    .ni-card-stats { width: 100%; }
+    .ni-stat {
+      display: flex; justify-content: space-between;
+      font-size: 0.67rem; color: rgba(255,255,255,0.45);
+      padding: 0.16rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ni-stat:last-child { border: none; }
+    .ni-stat strong { color: var(--white); font-weight: 700; }
+    /* Detail panel */
+    .ni-detail-wrap { overflow: hidden; max-height: 0; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1); margin-bottom: 1.5rem; }
+    .ni-detail-wrap.open { max-height: 500px; }
+    .ni-detail {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      padding: 1.6rem;
+      display: grid;
+      grid-template-columns: 110px 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .ni-detail img { width: 110px; border-radius: 12px; background: rgba(255,255,255,0.04); padding: 8px; object-fit: contain; }
+    .ni-dl-title { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.32); margin-bottom: 0.7rem; }
+    .ni-tags { display: flex; flex-wrap: wrap; gap: 0.32rem; }
+    .ni-tag { font-size: 0.67rem; padding: 0.18rem 0.55rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); }
+    .ni-benefits { display: flex; flex-direction: column; gap: 0.38rem; }
+    .ni-benefit { font-size: 0.76rem; font-family: var(--font-th); color: rgba(255,255,255,0.6); display: flex; gap: 0.4rem; line-height: 1.5; }
+    .ni-check { color: var(--green-fresh); flex-shrink: 0; }
+    /* Comparison table */
+    .ni-section-divider {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.1px; color: rgba(255,255,255,0.3);
+      margin: 0.5rem 0 1.2rem;
+    }
+    .ni-section-divider::before, .ni-section-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.09);
+    }
+    .ni-compare-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .ni-compare-wrap table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .ni-compare-wrap th { padding: 0.85rem 1rem; text-align: center; font-size: 0.74rem; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); white-space: nowrap; }
+    .ni-compare-wrap th:first-child { text-align: left; padding-left: 1.4rem; }
+    .ni-compare-wrap td { padding: 0.6rem 1rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.62); }
+    .ni-compare-wrap td:first-child { text-align: left; padding-left: 1.4rem; font-weight: 600; color: rgba(255,255,255,0.82); }
+    .ni-compare-wrap tr:last-child td { border: none; }
+    .ni-compare-wrap tr:hover td { background: rgba(255,255,255,0.015); }
+    .ni-tp { color:#3ec97a; } .ni-tc { color:#f5c842; } .ni-tv { color:#7ed957; } .ni-tm { color:#2db8c8; } .ni-tf { color:#ff9f2f; }
+    .ni-high { color: var(--green-fresh) !important; font-weight: 700; }
+    /* CTA strip */
+    .ni-cta-strip {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .ni-cta-strip p { font-size: 0.85rem; color: rgba(255,255,255,0.38); margin-bottom: 1rem; font-family: var(--font-th); }
+    /* Responsive */
+    @media (max-width: 860px) {
+      .ni-bar-row { grid-template-columns: repeat(3, 1fr); }
+      .ni-detail { grid-template-columns: 1fr 1fr; }
+      .ni-detail img { display: none; }
+    }
+    @media (max-width: 560px) {
+      .ni-bar-row { grid-template-columns: repeat(2, 1fr); }
+      .ni-detail { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <section id="nutrition" style="background:linear-gradient(180deg,#081c28 0%,#0a2235 100%)">
+    <div class="index-nutri-section">
+
+      <div class="index-nutri-header">
+        <div class="eyebrow-pill">📊 Nutrition Information</div>
+        <h2>สารอาหารที่ <span>ร่างกายต้องการ</span></h2>
+        <p>คลิกบาร์เพื่อดูส่วนประกอบและประโยชน์ หรือดูตารางเปรียบเทียบด้านล่าง</p>
+      </div>
+
+      <!-- 5 bar cards -->
+      <div class="ni-bar-row">
+
+        <div class="ni-card" data-k="protein">
+          <img class="ni-card-img" src="images/Protein.png" alt="Protein Bar" />
+          <div class="ni-card-name">💪 Protein</div>
+          <div class="ni-card-sub">หมวดที่ 1</div>
+          <div class="ni-card-stats">
+            <div class="ni-stat"><span>Calories</span><strong>210 kcal</strong></div>
+            <div class="ni-stat"><span>Protein</span><strong>22 g</strong></div>
+            <div class="ni-stat"><span>Carbs</span><strong>18 g</strong></div>
+            <div class="ni-stat"><span>Fat</span><strong>7 g</strong></div>
+          </div>
+        </div>
+
+        <div class="ni-card" data-k="carbohydrate">
+          <img class="ni-card-img" src="images/Carbohydrate.png" alt="Carbohydrate Bar" />
+          <div class="ni-card-name">⚡ Carbohydrate</div>
+          <div class="ni-card-sub">หมวดที่ 2</div>
+          <div class="ni-card-stats">
+            <div class="ni-stat"><span>Calories</span><strong>230 kcal</strong></div>
+            <div class="ni-stat"><span>Carbs</span><strong>35 g</strong></div>
+            <div class="ni-stat"><span>Fiber</span><strong>5 g</strong></div>
+            <div class="ni-stat"><span>Protein</span><strong>6 g</strong></div>
+          </div>
+        </div>
+
+        <div class="ni-card" data-k="vitamin">
+          <img class="ni-card-img" src="images/Vitamin.png" alt="Vitamin Bar" />
+          <div class="ni-card-name">🌿 Vitamin</div>
+          <div class="ni-card-sub">หมวดที่ 3</div>
+          <div class="ni-card-stats">
+            <div class="ni-stat"><span>Calories</span><strong>180 kcal</strong></div>
+            <div class="ni-stat"><span>Vit C</span><strong>60 mg</strong></div>
+            <div class="ni-stat"><span>Vit E</span><strong>15 mg</strong></div>
+            <div class="ni-stat"><span>Folate</span><strong>80 mcg</strong></div>
+          </div>
+        </div>
+
+        <div class="ni-card" data-k="mineral">
+          <img class="ni-card-img" src="images/Mineral.png" alt="Mineral Bar" />
+          <div class="ni-card-name">💧 Mineral</div>
+          <div class="ni-card-sub">หมวดที่ 4</div>
+          <div class="ni-card-stats">
+            <div class="ni-stat"><span>Calories</span><strong>195 kcal</strong></div>
+            <div class="ni-stat"><span>Calcium</span><strong>300 mg</strong></div>
+            <div class="ni-stat"><span>Iron</span><strong>8 mg</strong></div>
+            <div class="ni-stat"><span>Zinc</span><strong>5 mg</strong></div>
+          </div>
+        </div>
+
+        <div class="ni-card" data-k="fat">
+          <img class="ni-card-img" src="images/Fat.png" alt="Healthy Fat Bar" />
+          <div class="ni-card-name">🥑 Healthy Fat</div>
+          <div class="ni-card-sub">หมวดที่ 5</div>
+          <div class="ni-card-stats">
+            <div class="ni-stat"><span>Calories</span><strong>220 kcal</strong></div>
+            <div class="ni-stat"><span>Total Fat</span><strong>14 g</strong></div>
+            <div class="ni-stat"><span>Omega-3</span><strong>1.2 g</strong></div>
+            <div class="ni-stat"><span>MCT</span><strong>4 g</strong></div>
+          </div>
+        </div>
+
+      </div><!-- /ni-bar-row -->
+
+      <!-- Expand detail panel -->
+      <div class="ni-detail-wrap" id="ni-detail-wrap">
+        <div class="ni-detail" id="ni-detail"></div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="ni-section-divider">เปรียบเทียบสารอาหาร / แท่ง 40g</div>
+      <div class="ni-compare-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>สารอาหาร</th>
+              <th class="ni-tp">💪 Protein</th>
+              <th class="ni-tc">⚡ Carb</th>
+              <th class="ni-tv">🌿 Vitamin</th>
+              <th class="ni-tm">💧 Mineral</th>
+              <th class="ni-tf">🥑 Fat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>พลังงาน</td><td>210 kcal</td><td>230 kcal</td><td>180 kcal</td><td>195 kcal</td><td>220 kcal</td></tr>
+            <tr><td>โปรตีน</td><td class="ni-high">22 g</td><td>6 g</td><td>5 g</td><td>8 g</td><td>7 g</td></tr>
+            <tr><td>คาร์โบไฮเดรต</td><td>18 g</td><td class="ni-high">35 g</td><td>28 g</td><td>22 g</td><td>16 g</td></tr>
+            <tr><td>ไขมัน</td><td>7 g</td><td>5 g</td><td>4 g</td><td>6 g</td><td class="ni-high">14 g</td></tr>
+            <tr><td>ใยอาหาร</td><td>3 g</td><td class="ni-high">5 g</td><td>4 g</td><td>3 g</td><td>2 g</td></tr>
+            <tr><td>โซเดียม</td><td>110 mg</td><td>90 mg</td><td>70 mg</td><td>130 mg</td><td>85 mg</td></tr>
+            <tr><td>วิตามิน C</td><td>—</td><td>—</td><td class="ni-high">60 mg</td><td>—</td><td>—</td></tr>
+            <tr><td>แคลเซียม</td><td>120 mg</td><td>—</td><td>—</td><td class="ni-high">300 mg</td><td>—</td></tr>
+            <tr><td>Omega-3</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="ni-high">1.2 g</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CTA -->
+      <div class="ni-cta-strip">
+        <p>มีคำถามเพิ่มเติมเกี่ยวกับโภชนาการ? ลองถาม AI ผู้ช่วยของเรา</p>
+        <a href="chatbot.html" class="btn-primary">🤖 ถาม AI Chat →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    /* Bar card click → detail */
+    const NI_DATA = {
+      protein:      { img:'images/Protein.png',      ingredients:['🐟 ปลาแซลมอน','🥚 ไข่ไก่','🫘 ถั่วเหลือง','🥜 ถั่วลิสง','🌾 ข้าวโอ๊ต','🍶 เวย์โปรตีน','🍯 น้ำผึ้งแท้'],      benefits:['ซ่อมแซมและสร้างกล้ามเนื้อหลังออกกำลังกาย','เพิ่มความอิ่มนาน ลดการกินจุกจิก','เสริมภูมิคุ้มกันด้วยกรดอะมิโนจำเป็น','บำรุงผิวพรรณ เส้นผม และเล็บ'] },
+      carbohydrate: { img:'images/Carbohydrate.png', ingredients:['🌾 ข้าวกล้อง','🌿 ข้าวโอ๊ต','🍇 ลูกเกด','🌰 เมล็ดฟักทอง','🍯 น้ำผึ้ง','🫘 ถั่วแดง','🌾 ข้าวสาลีเต็มเมล็ด'],     benefits:['ให้พลังงานต่อเนื่อง ไม่พุ่งแล้วดิ่ง','เสริมประสิทธิภาพการออกกำลังกาย','ใยอาหารสูง เสริมสุขภาพลำไส้','รักษาระดับน้ำตาลในเลือดให้สม่ำเสมอ'] },
+      vitamin:      { img:'images/Vitamin.png',      ingredients:['🫐 บลูเบอร์รี่','🍓 สตรอว์เบอร์รี่','🥭 มะม่วง','🥦 บร็อคโคลี่','🌿 ผักโขม','🍋 วิตามิน C','🌻 เมล็ดทานตะวัน'],        benefits:['เสริมภูมิคุ้มกัน ต้านไวรัสและแบคทีเรีย','ต้านอนุมูลอิสระ ชะลอความแก่ของเซลล์','บำรุงผิวพรรณให้แข็งแรงและเปล่งปลั่ง','บำรุงสายตาและระบบมองเห็น'] },
+      mineral:      { img:'images/Mineral.png',      ingredients:['🥛 นมข้นไขมันต่ำ','🌊 เกลือแร่','🌿 ผักเคล','🌾 จมูกข้าวสาลี','🫘 เมล็ดฟักแฟง','💊 แคลเซียมคาร์บอเนต','🌰 เมล็ดงา'],      benefits:['เสริมสร้างกระดูกและฟันให้แข็งแรง','ป้องกันโลหิตจางด้วยธาตุเหล็กสูง','ผ่อนคลายกล้ามเนื้อและลดตะคริว','สุขภาพจิตดีและนอนหลับสนิทขึ้น'] },
+      fat:          { img:'images/Fat.png',          ingredients:['🥑 อะโวคาโด','🌰 อัลมอนด์','🥜 มะม่วงหิมพานต์','🍫 โกโก้ดาร์ก 70%','🐟 น้ำมันปลา','🌿 น้ำมันมะพร้าว','🌻 เมล็ดเจีย'],       benefits:['Omega-3 บำรุงสมองและความจำ','เพิ่ม HDL ดูแลหัวใจและหลอดเลือด','ต้านอนุมูลอิสระจากโกโก้ดาร์ก','วิตามิน E บำรุงผิวพรรณ'] },
+    };
+    let niActive = null;
+    const niWrap = document.getElementById('ni-detail-wrap');
+    const niPanel = document.getElementById('ni-detail');
+    document.querySelectorAll('.ni-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const k = card.dataset.k;
+        if (niActive === k) { card.classList.remove('active'); niWrap.classList.remove('open'); niActive = null; return; }
+        document.querySelectorAll('.ni-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active'); niActive = k;
+        const d = NI_DATA[k];
+        niPanel.innerHTML = `
+          <img src="${d.img}" alt="${k}" />
+          <div>
+            <div class="ni-dl-title">🌾 ส่วนประกอบหลัก</div>
+            <div class="ni-tags">${d.ingredients.map(i=>`<span class="ni-tag">${i}</span>`).join('')}</div>
+          </div>
+          <div>
+            <div class="ni-dl-title">✨ ประโยชน์</div>
+            <div class="ni-benefits">${d.benefits.map(b=>`<div class="ni-benefit"><span class="ni-check">✔</span>${b}</div>`).join('')}</div>
+          </div>`;
+        niWrap.classList.add('open');
+        setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+      });
+    });
+  </script>
+
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <!--         SCRIPTS          -->
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <script>
+    /* ---- Navbar scroll effect ---- */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    /* ---- Hamburger / Mobile menu ---- */
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', isOpen);
+      mobileMenu.setAttribute('aria-hidden', !isOpen);
+    });
+
+    /* Close mobile menu on link click */
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        mobileMenu.setAttribute('aria-hidden', 'true');
+      });
+    });
+
+    /* ---- Active nav link on scroll ---- */
+    const sections = document.querySelectorAll('section[id]');
+    const navItems = document.querySelectorAll('.nav-links a');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navItems.forEach(a => a.classList.remove('active'));
+          const active = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { threshold: 0.5 });
+
+    sections.forEach(s => observer.observe(s));
+
+    /* ---- Generate floating particles ---- */
+    const container = document.getElementById('particles');
+    const colors = ['#2db8c8', '#3ec97a', '#7ed957', '#f5c842', '#1a7a94'];
+
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 6 + 2;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const dur = (Math.random() * 12 + 7).toFixed(1);
+      const delay = (Math.random() * 10).toFixed(1);
+      const dx = (Math.random() * 120 - 60).toFixed(0);
+      const op = (Math.random() * 0.25 + 0.1).toFixed(2);
+
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        background:${color};
+        left:${Math.random() * 100}%;
+        --dur:${dur}s; --delay:${delay}s;
+        --dx:${dx}px; --op:${op};
+        filter: blur(${size > 6 ? 1 : 0}px);
+      `;
+      container.appendChild(p);
+    }
+  </script>
+
+  <!-- Login Modal -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="loginCloseBtn">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Logged in successfully!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Don't have an account? <a href="#signup" class="nav-signup-btn-link">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="signupCloseBtn">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers and updates</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Account created successfully!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="John Doe" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Already have an account? <a href="#login" class="nav-login-btn-link">Log in here</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Modal Logic */
+    const loginModal = document.getElementById('loginModal');
+    const signupModal = document.getElementById('signupModal');
+
+    const loginBtns = document.querySelectorAll('.nav-login-btn');
+    const signupBtns = document.querySelectorAll('.nav-signup-btn');
+    const loginLinkBtns = document.querySelectorAll('.nav-login-btn-link');
+    const signupLinkBtns = document.querySelectorAll('.nav-signup-btn-link');
+
+    const loginCloseBtn = document.getElementById('loginCloseBtn');
+    const signupCloseBtn = document.getElementById('signupCloseBtn');
+
+    // Open Login
+    const openLogin = (e) => {
+      e.preventDefault();
+      signupModal.classList.remove('active');
+      loginModal.classList.add('active');
+    };
+    loginBtns.forEach(btn => btn.addEventListener('click', openLogin));
+    loginLinkBtns.forEach(btn => btn.addEventListener('click', openLogin));
+
+    // Open Sign Up
+    const openSignup = (e) => {
+      e.preventDefault();
+      loginModal.classList.remove('active');
+      signupModal.classList.add('active');
+    };
+    signupBtns.forEach(btn => btn.addEventListener('click', openSignup));
+    signupLinkBtns.forEach(btn => btn.addEventListener('click', openSignup));
+
+    // Close buttons
+    loginCloseBtn.addEventListener('click', () => loginModal.classList.remove('active'));
+    signupCloseBtn.addEventListener('click', () => signupModal.classList.remove('active'));
+
+    // Click outside to close
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) loginModal.classList.remove('active');
+    });
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) signupModal.classList.remove('active');
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chat — Fit-Grid Nutrition Assistant</title>
+  <meta name="description" content="ถามตอบ AI เรื่องโภชนาการ Fit-Grid บาร์ทั้ง 5 หมวด" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+  <link rel="stylesheet" href="CSS/chatbot.css" />
+</head>
+
+<body>
+
+  <!-- ░░░ NAVBAR ░░░ -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html"><span class="nav-icon">🏠</span> Home</a></li>
+        <li class="nav-dropdown">
+          <a href="order.html"><span class="nav-icon">🍫</span> Products <span class="chevron">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="order.html?product=protein"><span class="dropdown-icon dd-protein">💪</span><span>Protein
+                  Bar</span></a></li>
+            <li><a href="order.html?product=carbohydrate"><span class="dropdown-icon dd-carb">⚡</span><span>Carbohydrate
+                  Bar</span></a></li>
+            <li><a href="order.html?product=vitamin"><span class="dropdown-icon dd-vitamin">🌿</span><span>Vitamin
+                  Bar</span></a></li>
+            <li><a href="order.html?product=mineral"><span class="dropdown-icon dd-mineral">💧</span><span>Mineral
+                  Bar</span></a></li>
+            <li><a href="order.html?product=fat"><span class="dropdown-icon dd-fat">🥑</span><span>Healthy Fat
+                  Bar</span></a></li>
+            <li class="dropdown-divider"></li>
+            <li><a href="box-order.html" style="color:#c87dff"><span class="dropdown-icon dd-box">🎨</span><span>Custom
+                  Box Builder</span></a></li>
+            <li><a href="scan.html" style="color:#2db8c8"><span class="dropdown-icon" style="background:rgba(45,184,200,0.2)">📷</span><span>Scan QR Box</span></a></li>
+
+          </ul>
+        </li>
+        <li><a href="chatbot.html" class="active"><span class="nav-icon">🤖</span> AI Chat</a></li>
+        <li><a href="howto.html"><span class="nav-icon">🍳</span> How to Cook</a></li>
+        <li><a href="contact.html"><span class="nav-icon">📩</span> Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span
+            class="nav-login-text">Login</span></a>
+        <a href="#signup" class="nav-cta nav-signup-btn">✨ Sign Up</a>
+        <button class="hamburger" id="hamburger" aria-label="menu"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-inner">
+        <a href="index.html">🏠 Home</a>
+        <a href="order.html?product=protein">💪 Protein Bar</a>
+        <a href="order.html?product=carbohydrate">⚡ Carbohydrate Bar</a>
+        <a href="order.html?product=vitamin">🌿 Vitamin Bar</a>
+        <a href="order.html?product=mineral">💧 Mineral Bar</a>
+        <a href="order.html?product=fat">🥑 Healthy Fat Bar</a>
+        <a href="box-order.html" style="color:#c87dff">🎨 Custom Box Builder</a>
+        <a href="chatbot.html">🤖 AI Chat</a>
+        <a href="howto.html">🍳 How to Cook</a>
+        <a href="contact.html">📩 Contact</a>
+        <a href="#signup" class="mobile-cta nav-signup-btn">✨ Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="chat-page">
+
+    <!-- Hero -->
+    <div class="chat-hero">
+      <div class="chat-hero-pill">🤖 AI Nutrition Assistant</div>
+      <h1>ถามเรื่องโภชนาการ <span class="gt">ได้เลย</span></h1>
+      <p>AI ผู้ช่วยของ Fit-Grid — ถามเรื่องสารอาหาร, แคลอรี่, ส่วนประกอบ หรือบาร์ที่เหมาะกับไลฟ์สไตล์คุณ</p>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-wrap">
+
+      <div class="chat-window">
+
+        <!-- Topbar -->
+        <div class="chat-topbar">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-topbar-info">
+            <strong>Fit-Grid Nutrition AI</strong>
+            <span>ผู้ช่วยโภชนาการ — ถามได้ทุกอย่างเกี่ยวกับบาร์</span>
+          </div>
+          <div class="chat-status">Online</div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">
+              สวัสดีครับ! ผมคือ <strong>Fit-Grid Nutrition AI</strong> 🍫<br>
+              ถามผมได้เลยเกี่ยวกับสารอาหาร แคลอรี่ ส่วนประกอบ หรือแนะนำบาร์ที่เหมาะกับคุณ 💪
+            </div>
+          </div>
+        </div>
+
+        <!-- Typing -->
+        <div class="typing-indicator" id="typing-indicator">
+          <div class="msg-avatar"
+            style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2db8c8,#3ec97a);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">
+            🤖</div>
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="chat-suggestions" id="suggestions">
+          <button class="sug-chip" data-q="บาร์ไหนโปรตีนสูงที่สุด?">💪 โปรตีนสูงสุด</button>
+          <button class="sug-chip" data-q="บาร์ไหนเหมาะก่อนออกกำลังกาย?">🏃 ก่อน Workout</button>
+          <button class="sug-chip" data-q="บาร์ไหนช่วยลดน้ำหนัก?">⚖️ ลดน้ำหนัก</button>
+          <button class="sug-chip" data-q="แคลอรี่แต่ละแท่งเท่าไหร่?">🔥 แคลอรี่ต่อแท่ง</button>
+          <button class="sug-chip" data-q="Vitamin Bar ดีอย่างไร?">🌿 Vitamin Bar ดียังไง</button>
+          <button class="sug-chip" data-q="Mineral Bar มีอะไรบ้าง?">💧 Mineral Bar</button>
+          <button class="sug-chip" data-q="Healthy Fat Bar มีโอเมก้า 3 ไหม?">🥑 Omega-3</button>
+          <button class="sug-chip" data-q="ราคาเท่าไหร่?">💰 ราคา</button>
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input-bar">
+          <input class="chat-input" id="chat-input" type="text" placeholder="พิมพ์คำถามเกี่ยวกับโภชนาการ Fit-Grid..."
+            autocomplete="off" />
+          <button class="chat-send-btn" id="send-btn" title="Send">➤</button>
+        </div>
+
+      </div><!-- /chat-window -->
+
+      <!-- Quick shortcut cards -->
+      <div class="quick-info-row">
+        <a class="qi-card" onclick="sendMessage('Protein Bar มีโปรตีนเท่าไหร่?')">
+          <div class="qi-icon">💪</div>
+          <div class="qi-name">Protein Bar</div>
+          <div class="qi-kcal">210 kcal · 22g Protein</div>
+        </a>
+        <a class="qi-card" onclick="sendMessage('Carbohydrate Bar มีสารอาหารอะไรบ้าง?')">
+          <div class="qi-icon">⚡</div>
+          <div class="qi-name">Carb Bar</div>
+          <div class="qi-kcal">230 kcal · 35g Carbs</div>
+        </a>
+        <a class="qi-card" onclick="sendMessage('Vitamin Bar ประโยชน์คืออะไร?')">
+          <div class="qi-icon">🌿</div>
+          <div class="qi-name">Vitamin Bar</div>
+          <div class="qi-kcal">180 kcal · Vit A–K</div>
+        </a>
+        <a class="qi-card" onclick="sendMessage('Mineral Bar มีแร่ธาตุอะไรบ้าง?')">
+          <div class="qi-icon">💧</div>
+          <div class="qi-name">Mineral Bar</div>
+          <div class="qi-kcal">195 kcal · Ca 300mg</div>
+        </a>
+        <a class="qi-card" onclick="sendMessage('Healthy Fat Bar มีโอเมก้า 3 ไหม?')">
+          <div class="qi-icon">🥑</div>
+          <div class="qi-name">Fat Bar</div>
+          <div class="qi-kcal">220 kcal · Omega-3</div>
+        </a>
+      </div>
+
+    </div><!-- /chat-wrap -->
+  </div>
+
+  <script src="chatbot.js"></script>
+
+  <!-- Login Modal -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="loginCloseBtn">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+      <form
+        onsubmit="event.preventDefault(); alert('Logged in!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group"><label>Email</label><input type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group"><label>Password</label><input type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+      <div class="login-modal-footer">Don't have an account? <a href="#signup" class="nav-signup-btn-link">Sign up</a>
+      </div>
+    </div>
+  </div>
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="signupCloseBtn">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers</p>
+      <form
+        onsubmit="event.preventDefault(); alert('Account created!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group"><label>Full Name</label><input type="text" placeholder="John Doe" required></div>
+        <div class="login-form-group"><label>Email</label><input type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group"><label>Password</label><input type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+      <div class="login-modal-footer">Have an account? <a href="#login" class="nav-login-btn-link">Log in</a></div>
+    </div>
+  </div>
+</body>
+
+</html>

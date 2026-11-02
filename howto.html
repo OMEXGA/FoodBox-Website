@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Cook — Fit-Grid</title>
+  <meta name="description" content="ไอเดียการทำอาหารและเมนูอร่อยจาก Fit-Grid นิวทริชั่นบาร์" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="CSS/Styles.css" />
+  <style>
+    /* ======================================
+       HOW TO COOK PAGE
+       ====================================== */
+    body {
+      background: #081c28;
+    }
+
+    .cook-page {
+      min-height: 100vh;
+      padding-top: 72px;
+    }
+
+    /* ---- Hero Banner ---- */
+    .cook-hero {
+      background: linear-gradient(135deg,
+          rgba(8, 35, 46, 0.95) 0%,
+          rgba(10, 79, 110, 0.9) 50%,
+          rgba(245, 200, 66, 0.15) 100%);
+      padding: 4rem 2rem 3.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cook-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 50%, rgba(245, 200, 66, 0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .cook-hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(245, 200, 66, 0.12);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      border-radius: 100px;
+      padding: 0.3rem 1rem;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #f5c842;
+      margin-bottom: 1.2rem;
+    }
+
+    .cook-hero h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 0.75rem;
+    }
+
+    .cook-hero h1 span {
+      background: linear-gradient(135deg, #f5c842, #ff9f2f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cook-hero p {
+      font-family: var(--font-th);
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.55);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ---- Filter tags ---- */
+    .recipe-filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 1.5rem 1rem 0;
+      position: sticky;
+      top: 72px;
+      background: rgba(8, 28, 40, 0.92);
+      backdrop-filter: blur(16px);
+      z-index: 100;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1.2rem;
+      border-radius: 100px;
+      border: 1.5px solid var(--glass-border);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-en);
+      transition: all 0.2s ease;
+      margin-bottom: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: rgba(245, 200, 66, 0.12);
+      border-color: #f5c842;
+      color: var(--white);
+    }
+
+    /* ---- Content wrapper ---- */
+    .cook-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    /* ---- Recipe Cards ---- */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .recipe-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .recipe-card:hover {
+      border-color: rgba(245, 200, 66, 0.35);
+      transform: translateY(-4px);
+    }
+
+    /* Visual stand-in for real food photos */
+    .rc-image {
+      height: 200px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--glass-border);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      overflow: hidden;
+    }
+
+    .rc-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    }
+
+    .rc-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .rc-tags {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .rc-tag {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      font-weight: 700;
+    }
+
+    .rc-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: var(--white);
+    }
+
+    .rc-desc {
+      font-family: var(--font-th);
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Ingredients List */
+    .rc-ingr-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .rc-ingr-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .rc-ingr-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .rc-ingr-item .bar-icon {
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+
+    /* Steps */
+    .rc-steps-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 0.5rem;
+      margin-top: auto;
+      /* push to bottom */
+    }
+
+    .rc-step {
+      font-family: var(--font-th);
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.5;
+      margin-bottom: 0.4rem;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .rc-step::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: #f5c842;
+    }
+
+    /* Tag Colors */
+    .tag-breakfast {
+      background: rgba(245, 200, 66, 0.15);
+      color: #f5c842;
+      border: 1px solid rgba(245, 200, 66, 0.3);
+    }
+
+    .tag-dessert {
+      background: rgba(200, 125, 255, 0.15);
+      color: #c87dff;
+      border: 1px solid rgba(200, 125, 255, 0.3);
+    }
+
+    .tag-smoothie {
+      background: rgba(45, 184, 200, 0.15);
+      color: #2db8c8;
+      border: 1px solid rgba(45, 184, 200, 0.3);
+    }
+
+    .tag-snack {
+      background: rgba(62, 201, 122, 0.15);
+      color: #3ec97a;
+      border: 1px solid rgba(62, 201, 122, 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .recipe-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ░░░ NAVBAR ░░░ -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" alt="Fit-Grid Logo" class="nav-logo-img" />
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html"><span class="nav-icon">🏠</span> Home</a></li>
+        <li class="nav-dropdown">
+          <a href="order.html"><span class="nav-icon">🍫</span> Products <span class="chevron">▼</span></a>
+          <ul class="dropdown-menu">
+            <li><a href="order.html?product=protein"><span class="dropdown-icon dd-protein">💪</span><span>Protein
+                  Bar</span></a></li>
+            <li><a href="order.html?product=carbohydrate"><span class="dropdown-icon dd-carb">⚡</span><span>Carbohydrate
+                  Bar</span></a></li>
+            <li><a href="order.html?product=vitamin"><span class="dropdown-icon dd-vitamin">🌿</span><span>Vitamin
+                  Bar</span></a></li>
+            <li><a href="order.html?product=mineral"><span class="dropdown-icon dd-mineral">💧</span><span>Mineral
+                  Bar</span></a></li>
+            <li><a href="order.html?product=fat"><span class="dropdown-icon dd-fat">🥑</span><span>Healthy Fat
+                  Bar</span></a></li>
+            <li class="dropdown-divider"></li>
+            <li><a href="box-order.html" style="color:#c87dff"><span class="dropdown-icon dd-box">🎨</span><span>Custom
+                  Box Builder</span></a></li>
+            <li><a href="scan.html" style="color:#2db8c8"><span class="dropdown-icon"
+                  style="background:rgba(45,184,200,0.2)">📷</span><span>Scan QR Box</span></a></li>
+
+          </ul>
+        </li>
+        <li><a href="chatbot.html"><span class="nav-icon">🤖</span> AI Chat</a></li>
+        <li><a href="howto.html" class="active"><span class="nav-icon">🍳</span> How to Cook</a></li>
+        <li><a href="contact.html"><span class="nav-icon">📩</span> Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="cart.html" class="nav-cart-btn">🛒<span class="cart-badge" id="cart-count">0</span></a>
+        <a href="#" class="nav-login-btn"><span class="nav-login-icon">👤</span><span
+            class="nav-login-text">Login</span></a>
+        <a href="#signup" class="nav-cta nav-signup-btn">✨ Sign Up</a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-inner">
+        <a href="index.html">🏠 Home</a>
+        <a href="howto.html">🍳 How to Cook</a>
+        <a href="order.html?product=protein">💪 Protein Bar</a>
+        <a href="order.html?product=carbohydrate">⚡ Carbohydrate Bar</a>
+        <a href="order.html?product=vitamin">🌿 Vitamin Bar</a>
+        <a href="order.html?product=mineral">💧 Mineral Bar</a>
+        <a href="order.html?product=fat">🥑 Healthy Fat Bar</a>
+        <a href="box-order.html" style="color:#c87dff">🎨 Custom Box Builder</a>
+        <a href="howto.html">🍳 How to Cook</a>
+        <a href="chatbot.html">🤖 AI Chat</a>
+        <a href="contact.html">📩 Contact</a>
+        <a href="#signup" class="mobile-cta nav-signup-btn">✨ Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░░ MAIN ░░░ -->
+  <main class="cook-page">
+
+    <!-- Hero -->
+    <section class="cook-hero">
+      <div class="cook-hero-eyebrow">🍳 How to Cook with Fit-Grid</div>
+      <h1>เมนูอร่อย <span>ทำง่ายได้สุขภาพ</span></h1>
+      <p>Fit-Grid ไม่ได้เป็นแค่บาร์ทานเล่น แต่ยังสามารถนำมาประยุกต์เป็นเมนูอาหารเช้า ของหวาน หรือเครื่องดื่มได้หลากหลาย
+        ให้คุณสนุกกับการดูแลสุขภาพแบบไม่จำเจ</p>
+    </section>
+
+    <!-- Filters -->
+    <nav class="recipe-filters" id="filters">
+      <button class="filter-btn active" data-filter="all">All Recipes</button>
+      <button class="filter-btn" data-filter="breakfast">🍳 อาหารเช้า (Breakfast)</button>
+      <button class="filter-btn" data-filter="smoothie">🥤 สมูทตี้ (Smoothies)</button>
+      <button class="filter-btn" data-filter="dessert">🍰 ของหวาน (Desserts)</button>
+      <button class="filter-btn" data-filter="snack">🍿 ของว่าง (Snacks)</button>
+    </nav>
+
+    <div class="cook-content">
+
+      <div class="recipe-grid" id="recipe-grid">
+
+        <!-- Recipe 1 -->
+        <div class="recipe-card" data-cat="breakfast">
+          <div class="rc-image">🥣</div>
+          <div class="rc-body">
+            <div class="rc-tags"><span class="rc-tag tag-breakfast">Breakfast</span></div>
+            <h3 class="rc-title">Fit-Grid Overnight Oats</h3>
+            <p class="rc-desc">เมนูอาหารเช้าทำง่ายก่อนนอน อิ่มท้องยาวนานด้วยคาร์บเชิงซ้อนและโปรตีนเน้นๆ</p>
+
+            <div class="rc-ingr-title">ส่วนผสมหลัก</div>
+            <div class="rc-ingr-list">
+              <div class="rc-ingr-item"><span class="bar-icon">⚡</span> 1/2 แท่ง Carbohydrate Bar (หั่นเต๋า)</div>
+              <div class="rc-ingr-item"><span class="bar-icon">💪</span> 1/2 แท่ง Protein Bar (หั่นเต๋า)</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥛</span> นมอัลมอนด์หรือนมโอ๊ต 1 ถ้วย</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🌾</span> ข้าวโอ๊ต 3 ช้อนโต๊ะ</div>
+            </div>
+
+            <div class="rc-steps-title">วิธีทำ</div>
+            <div class="rc-step">ผสมข้าวโอ๊ตและนมลงในขวดแก้ว คนให้เข้ากัน</div>
+            <div class="rc-step">ใส่บาร์ที่หั่นเตรียมไว้ลงไป (เก็บไว้โรยหน้าเล็กน้อย)</div>
+            <div class="rc-step">แช่ตู้เย็นทิ้งไว้ข้ามคืน</div>
+            <div class="rc-step">ตอนเช้า นำออกมาโรยหน้าด้วยบาร์ที่เหลือ พร้อมทาน!</div>
+          </div>
+        </div>
+
+        <!-- Recipe 2 -->
+        <div class="recipe-card" data-cat="smoothie">
+          <div class="rc-image">🥤</div>
+          <div class="rc-body">
+            <div class="rc-tags"><span class="rc-tag tag-smoothie">Smoothie</span></div>
+            <h3 class="rc-title">Berry Boost Smoothie</h3>
+            <p class="rc-desc">สมูทตี้วิตามินสูง สดชื่น ดื่มง่าย ได้ประโยชน์จากผลไม้ตระกูลเบอร์รี่เต็มๆ</p>
+
+            <div class="rc-ingr-title">ส่วนผสมหลัก</div>
+            <div class="rc-ingr-list">
+              <div class="rc-ingr-item"><span class="bar-icon">🌿</span> 1 แท่ง Vitamin Bar</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🍓</span> สตรอว์เบอร์รี่/บลูเบอร์รี่แช่แข็ง 1 ถ้วย</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🍌</span> กล้วยหอมแช่แข็ง 1/2 ลูก</div>
+              <div class="rc-ingr-item"><span class="bar-icon">💧</span> น้ำมะพร้าว 200 ml</div>
+            </div>
+
+            <div class="rc-steps-title">วิธีทำ</div>
+            <div class="rc-step">หั่น Vitamin Bar เป็นชิ้นเล็กๆ เพื่อให้ปั่นง่ายขึ้น</div>
+            <div class="rc-step">ใส่ส่วนผสมทั้งหมดลงในโถปั่น</div>
+            <div class="rc-step">ปั่นจนเนื้อเนียนละเอียดเข้ากัน</div>
+            <div class="rc-step">เทใส่แก้ว ตกแต่งด้วยผลไม้สด ดื่มเพื่อความสดชื่นทันที</div>
+          </div>
+        </div>
+
+        <!-- Recipe 3 -->
+        <div class="recipe-card" data-cat="dessert">
+          <div class="rc-image">🍫</div>
+          <div class="rc-body">
+            <div class="rc-tags"><span class="rc-tag tag-dessert">Dessert</span></div>
+            <h3 class="rc-title">Choco-Fat Brownie Bites</h3>
+            <p class="rc-desc">บราวนี่บอลคลีนๆ ไม่อบ อร่อยเข้มข้นจากไขมันดีและดาร์กช็อกโกแลต</p>
+
+            <div class="rc-ingr-title">ส่วนผสมหลัก</div>
+            <div class="rc-ingr-list">
+              <div class="rc-ingr-item"><span class="bar-icon">🥑</span> 2 แท่ง Healthy Fat Bar</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥄</span> ผงโกโก้ 1 ช้อนโต๊ะ (สำหรับคลุก)</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥜</span> เนยถั่ว (Peanut Butter) 1 ช้อนโต๊ะ</div>
+            </div>
+
+            <div class="rc-steps-title">วิธีทำ</div>
+            <div class="rc-step">นำ Healthy Fat Bar ไปอุ่นในไมโครเวฟ 10-15 วินาทีให้นิ่มลง</div>
+            <div class="rc-step">นำมาบดรวมกับเนยถั่วจนเป็นเนื้อเดียวกัน</div>
+            <div class="rc-step">ปั้นเป็นก้อนกลมๆ ขนาดพอดีคำ</div>
+            <div class="rc-step">นำไปคลุกกับผงโกโก้ให้ทั่ว นำไปแช่เย็น 15 นาที พร้อมเสิร์ฟ</div>
+          </div>
+        </div>
+
+        <!-- Recipe 4 -->
+        <div class="recipe-card" data-cat="snack">
+          <div class="rc-image">🥗</div>
+          <div class="rc-body">
+            <div class="rc-tags"><span class="rc-tag tag-snack">Snack</span></div>
+            <h3 class="rc-title">Mineral Yogurt Parfait</h3>
+            <p class="rc-desc">ของว่างยามบ่ายที่ช่วยเติมแร่ธาตุและโปรตีน ให้เนื้อสัมผัสกรุบกรอบ</p>
+
+            <div class="rc-ingr-title">ส่วนผสมหลัก</div>
+            <div class="rc-ingr-list">
+              <div class="rc-ingr-item"><span class="bar-icon">💧</span> 1 แท่ง Mineral Bar</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥣</span> กรีกโยเกิร์ต 1 ถ้วย</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🍯</span> น้ำผึ้ง 1 ช้อนชา (ถ้าชอบหวาน)</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥭</span> ผลไม้สดตามชอบ (เช่น มะม่วง กีวี่)</div>
+            </div>
+
+            <div class="rc-steps-title">วิธีทำ</div>
+            <div class="rc-step">บดหรือสับ Mineral Bar เป็นชิ้นเล็กๆ คล้ายกราโนล่า</div>
+            <div class="rc-step">ตักกรีกโยเกิร์ตใส่แก้วเป็นชั้นแรก</div>
+            <div class="rc-step">โรย Mineral Bar และผลไม้สดสลับชั้นกัน</div>
+            <div class="rc-step">ราดน้ำผึ้งด้านบนสุดเล็กน้อย ทานเย็นๆ ชื่นใจ</div>
+          </div>
+        </div>
+
+        <!-- Recipe 5 -->
+        <div class="recipe-card" data-cat="breakfast">
+          <div class="rc-image">🥞</div>
+          <div class="rc-body">
+            <div class="rc-tags"><span class="rc-tag tag-breakfast">Breakfast</span></div>
+            <h3 class="rc-title">Protein Pancakes</h3>
+            <p class="rc-desc">แพนเค้กโปรตีนสูง อร่อยทำง่าย ใช้บาร์แทนแป้งบางส่วนเพื่อสุขภาพที่ดีกว่า</p>
+
+            <div class="rc-ingr-title">ส่วนผสมหลัก</div>
+            <div class="rc-ingr-list">
+              <div class="rc-ingr-item"><span class="bar-icon">💪</span> 1 แท่ง Protein Bar (ปั่นละเอียด)</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🥚</span> ไข่ไก่ 1 ฟอง</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🍌</span> กล้วยหอมสุกบด 1 ลูก</div>
+              <div class="rc-ingr-item"><span class="bar-icon">🧈</span> น้ำมันมะพร้าวเล็กน้อย (สำหรับทากระทะ)</div>
+            </div>
+
+            <div class="rc-steps-title">วิธีทำ</div>
+            <div class="rc-step">นำบาร์โปรตีนไปปั่นให้ละเอียดเหมือนแป้ง</div>
+            <div class="rc-step">ผสมบาร์ที่ปั่นแล้ว ไข่ไก่ และกล้วยหอมบด คนให้เข้ากัน</div>
+            <div class="rc-step">ตั้งกระทะไฟอ่อน ทาน้ำมันมะพร้าวบางๆ</div>
+            <div class="rc-step">หยอดแป้งลงทอดจนสุกทั้งสองด้าน ทานคู่กับผลไม้สด</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* Navbar scroll */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    /* Hamburger */
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      const open = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open', open);
+    });
+
+    /* Filters */
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.recipe-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Toggle active class
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Filter cards
+        const filter = btn.dataset.filter;
+        cards.forEach(card => {
+          if (filter === 'all' || card.dataset.cat === filter) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- Login Modal -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="loginCloseBtn">✕</button>
+      <h2>Welcome Back</h2>
+      <p>Log in to your Fit-Grid account</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Logged in successfully!'); document.getElementById('loginModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Login</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Don't have an account? <a href="#signup" class="nav-signup-btn-link">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div class="login-modal-overlay" id="signupModal">
+    <div class="login-modal">
+      <button class="login-close-btn" id="signupCloseBtn">✕</button>
+      <h2>Create Account</h2>
+      <p>Join Fit-Grid for exclusive offers and updates</p>
+
+      <form
+        onsubmit="event.preventDefault(); alert('Account created successfully!'); document.getElementById('signupModal').classList.remove('active');">
+        <div class="login-form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="John Doe" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="login-form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="login-submit-btn">Sign Up</button>
+      </form>
+
+      <div class="login-modal-footer">
+        Already have an account? <a href="#login" class="nav-login-btn-link">Log in here</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Modal Logic */
+    const loginModal = document.getElementById('loginModal');
+    const signupModal = document.getElementById('signupModal');
+
+    const loginBtns = document.querySelectorAll('.nav-login-btn');
+    const signupBtns = document.querySelectorAll('.nav-signup-btn');
+    const loginLinkBtns = document.querySelectorAll('.nav-login-btn-link');
+    const signupLinkBtns = document.querySelectorAll('.nav-signup-btn-link');
+
+    const loginCloseBtn = document.getElementById('loginCloseBtn');
+    const signupCloseBtn = document.getElementById('signupCloseBtn');
+
+    // Open Login
+    const openLogin = (e) => {
+      e.preventDefault();
+      signupModal.classList.remove('active');
+      loginModal.classList.add('active');
+    };
+    loginBtns.forEach(btn => btn.addEventListener('click', openLogin));
+    loginLinkBtns.forEach(btn => btn.addEventListener('click', openLogin));
+
+    // Open Sign Up
+    const openSignup = (e) => {
+      e.preventDefault();
+      loginModal.classList.remove('active');
+      signupModal.classList.add('active');
+    };
+    signupBtns.forEach(btn => btn.addEventListener('click', openSignup));
+    signupLinkBtns.forEach(btn => btn.addEventListener('click', openSignup));
+
+    // Close buttons
+    loginCloseBtn.addEventListener('click', () => loginModal.classList.remove('active'));
+    signupCloseBtn.addEventListener('click', () => signupModal.classList.remove('active'));
+
+    // Click outside to close
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) loginModal.classList.remove('active');
+    });
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) signupModal.classList.remove('active');
+    });
+  </script>
+</body>
+
+</html>
